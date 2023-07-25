@@ -2042,7 +2042,7 @@ invisible(dev.off())
 # fraction genome altered comparison
 tmp1 <- annCol.cbio[which(annCol.cbio$tune_Clust == "C1"),"Fraction Genome Altered"]
 tmp2 <- annCol.cbio[which(annCol.cbio$tune_Clust == "C2"),"Fraction Genome Altered"]
-wilcox.test(tmp1,tmp2,alternative = "greater")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -2069,7 +2069,7 @@ tmp2 <- rownames(annCol.cbio[which(annCol.cbio$tune_Clust == "C2"),])
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
 wilcox.test(tmp1,tmp2)
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -2266,7 +2266,7 @@ tmp2 <- rownames(annCol.ccr39[which(annCol.ccr39$tune_Clust == "C2"),])
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
 wilcox.test(tmp1,tmp2)
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -2321,7 +2321,7 @@ tmp2 <- rownames(annCol.target[which(annCol.target$tune_Clust == "C2"),])
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
 wilcox.test(tmp1,tmp2)
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -2407,7 +2407,7 @@ tmp2 <- rownames(annCol.target[which(annCol.target$tune_Clust == "C2"),])
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
 wilcox.test(tmp1,tmp2)
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 
 # survival analysis
 tmp <- data.frame(OS.time = Sinfo.target$`Overall Survival Time in Days`,
@@ -2710,7 +2710,7 @@ tmp1 <- annCol.target114[which(annCol.target114$tune_Clust == "C1"),"Fraction Ge
 tmp2 <- annCol.target114[which(annCol.target114$tune_Clust == "C2"),"Fraction Genome Altered"]
 #tmp3 <- annCol.target114[which(annCol.target114$tune_Clust == "C3"),"Fraction Genome Altered"]
 
-wilcox.test(tmp2,tmp1,alternative = "greater")
+wilcox.test(tmp2,tmp1)
 tmp <- data.frame(exp = c(tmp2,tmp1),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp2),length(tmp1))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -2739,7 +2739,7 @@ tmp2 <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C2"),])
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
 
-t.test(tmp1,tmp2,alternative = "less")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Infiltrated","Desert"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -3420,7 +3420,7 @@ rm(data)
 
 tmp1 <- fga.gaby[RNA_Clust1,"FGA"]
 tmp2 <- fga.gaby[RNA_Clust2,"FGA"]
-wilcox.test(tmp1,tmp2,alternative = "less") # 0.0754
+wilcox.test(tmp1,tmp2) # 0.0754
 
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Infiltrated","Desert"),c(length(tmp1),length(tmp2))))
@@ -3439,11 +3439,11 @@ invisible(dev.off())
 
 tmp1 <- fga.gaby[RNA_Clust1,"FGG"]
 tmp2 <- fga.gaby[RNA_Clust2,"FGG"]
-wilcox.test(tmp1,tmp2,alternative = "less")
+wilcox.test(tmp1,tmp2)
 
 tmp1 <- fga.gaby[RNA_Clust1,"FGL"]
 tmp2 <- fga.gaby[RNA_Clust2,"FGL"]
-wilcox.test(tmp1,tmp2,alternative = "less")
+wilcox.test(tmp1,tmp2)
 
 #-----------------#
 # GISTIC analysis #
@@ -3469,169 +3469,6 @@ marker <- data.frame(Marker.Name = a,Chromosome = b,Marker.Position=c,stringsAsF
 write.table(as.data.frame(marker),file.path(res.path,"Gaby_wilms_marker_forGISTIC2.0.txt"),sep = "\t",row.names = F,quote = F)
 rm(a); rm(b); rm(c)
 
-# load gistic results with qvalue 0.25, cutoff 0.2, confident interval 95
-gistic.gaby <- read.table(file.path(data.path,"236403/Gaby_wilms_0.2_95.all_thresholded.by_genes.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-cnacomp.gaby <- NULL
-for (i in 1:nrow(gistic.gaby)) {
-  display.progress(index = i,totalN = nrow(gistic.gaby))
-  
-  # loss
-  tmp <- gistic.gaby[i,]
-  g <- rownames(tmp)
-  loci <- tmp$Cytoband
-  tmp <- data.frame(cna = as.numeric(tmp[,c(RNA_Clust1,RNA_Clust2)]),
-                    group = rep(c("C1","C2"),c(5,5)),
-                    stringsAsFactors = F)
-  loss <- amp <- tmp
-  loss$cna <- ifelse(loss$cna < 0,"LOSS","Others")
-  amp$cna <- ifelse(amp$cna > 0,"AMP","Others")
-  
-  loss.dt <- as.data.frame.array(table(loss$cna,loss$group))
-  amp.dt <- as.data.frame.array(table(amp$cna,amp$group))
-  
-  if(!is.element("AMP",rownames(amp.dt))) {
-    amp.pct <- c(0,0)
-    amp.p <- NA
-  } else {
-    amp.pct <- as.numeric(amp.dt[1,]/colSums(amp.dt))
-    amp.p <- fisher.test(amp.dt)$p.value
-  }
-  
-  if(!is.element("LOSS",rownames(loss.dt))) {
-    loss.pct <- c(0,0)
-    loss.p <- NA
-  } else {
-    loss.pct <- as.numeric(loss.dt[1,]/colSums(loss.dt))
-    loss.p <- fisher.test(loss.dt)$p.value
-  }
-  
-  cnacomp.gaby <- rbind.data.frame(cnacomp.gaby,
-                                   data.frame(gene = g,
-                                              loci = loci,
-                                              loss.C1 = loss.pct[1],
-                                              loss.C2 = loss.pct[2],
-                                              p.loss = loss.p,
-                                              amp.C1 = amp.pct[1],
-                                              amp.C2 = amp.pct[2],
-                                              p.amp = amp.p,
-                                              stringsAsFactors = F),
-                                   stringsAsFactors = F)
-  
-}
-rownames(cnacomp.gaby) <- cnacomp.gaby$gene
-write.table(cnacomp.gaby,file.path(res.path,"comparison of gene level cna in gaby cohort between two immune clusters.txt"),sep = "\t",row.names = F,quote = F)
-
-# copy number heatmap of microenvironment factors
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(gaby.wt))
-com_gene <- setdiff(com_gene,"HLA-DQB2")
-com_cna <- intersect(com_gene,cnacomp.gaby$gene)
-annRow.cna <- annRow[com_cna,,drop = F]
-
-plotdata <- cnacomp.gaby[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    " 
-p.value <- cnacomp.gaby[com_cna,"p.loss"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna loss percentage of microenviroment factors in Gaby clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata[,1:2],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(46,87,93,116,120,126,128,142),
-         #gaps_col = 2,
-         labels_row = add.label)
-invisible(dev.off())
-
-plotdata <- cnacomp.gaby[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    "
-p.value <- cnacomp.gaby[com_cna,"p.amp"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in Gaby clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata[,3:4],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(46,87,93,116,120,126,128,142),
-         #gaps_col = 2,
-         labels_row = add.label)
-invisible(dev.off())
-
-# correlation between 4 CNV region and gene expression
-loci <- c("11q14.3","16q22.1","16q24.3","21q11.2")
-gistic.gaby.loci <- gistic.gaby[which(gistic.gaby$Cytoband %in% loci),]
-gistic.gaby.loci <- gistic.gaby.loci[intersect(rownames(gistic.gaby.loci),rownames(gaby.wt)),]
-
-cnacomp.gaby <- NULL
-for (i in 1:nrow(gistic.gaby.loci)) {
-  display.progress(index = i,totalN = nrow(gistic.gaby))
-  
-  tmp <- gistic.gaby.loci[i,]
-  g <- rownames(tmp)
-  loci <- tmp$Cytoband
-  tmp <- data.frame(cna = as.numeric(tmp[,c(RNA_Clust1,RNA_Clust2)]),
-                    exp = as.numeric(gaby.wt[g,c(RNA_Clust1,RNA_Clust2)]),
-                    stringsAsFactors = F)
-  
-  if(loci %in% c("11q14.3","16q22.1","16q24.3")) {
-    class <- "loss"
-    tmp$class <- ifelse(tmp$cna < 0,"loss","others")
-    tmp1 <- tmp[which(tmp$class == "loss"),"exp"]
-    tmp2 <- tmp[which(tmp$class == "others"),"exp"]
-    wt <- wilcox.test(tmp1,tmp2,alternative = "less")
-    cnacomp.gaby <- rbind.data.frame(cnacomp.gaby,
-                                     data.frame(gene = g,
-                                                loci = loci,
-                                                category = class,
-                                                avg.cna = mean(tmp1),
-                                                avg.others = mean(tmp2),
-                                                p.value = wt$p.value,
-                                                stringsAsFactors = F),
-                                     stringsAsFactors = F)    
-  } else {
-    class <- "amp"
-    tmp$class <- ifelse(tmp$cna < 0,"amp","others")
-    tmp1 <- tmp[which(tmp$class == "amp"),"exp"]
-    tmp2 <- tmp[which(tmp$class == "others"),"exp"]
-    wt <- wilcox.test(tmp1,tmp2,alternative = "greater")
-    cnacomp.gaby <- rbind.data.frame(cnacomp.gaby,
-                                     data.frame(gene = g,
-                                                loci = loci,
-                                                category = class,
-                                                avg.cna = mean(tmp1),
-                                                avg.others = mean(tmp2),
-                                                p.value = wt$p.value,
-                                                stringsAsFactors = F),
-                                     stringsAsFactors = F)  
-  }
-}
-rownames(cnacomp.gaby) <- cnacomp.gaby$gene
-write.table(cnacomp.gaby,file.path(res.path,"correlation between cna and expression in 4 loci of gaby cohort.txt"),sep = "\t",row.names = F,quote = F)
-
 # TARGET cohort
 Segment <- read.table(file.path(data.path,"wt_target_2018_pub/data_cna_hg19.seg"),sep="\t",header=T,stringsAsFactors = F)
 colnames(Segment)<- c("Sample","Chrom","Start","Stop","Mark","Seg.CN")
@@ -3651,249 +3488,6 @@ for(i in 1:nrow(marker)) {
 marker <- data.frame(Marker.Name = a,Chromosome = b,Marker.Position=c,stringsAsFactors = F)
 write.table(as.data.frame(marker),file.path(res.path,"Target_wilms_marker_forGISTIC2.0.txt"),sep = "\t",row.names = F,quote = F)
 rm(a); rm(b); rm(c)
-
-# load gistic results with qvalue 0.25, cutoff 0.2, confident interval 95
-gistic.target <- read.table(file.path(data.path,"236749/Target_wilms_0.2_95.all_thresholded.by_genes.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-tmp1 <- gistic.target[,1:2]
-tmp2 <- gistic.target[,3:ncol(gistic.target)]
-
-colnames(tmp2) <- paste0(colnames(tmp2),"A")
-com_sam <- intersect(colnames(tmp2),rownames(matchID))
-tmp2 <- tmp2[,com_sam]
-colnames(tmp2) <- matchID[com_sam,"SRA_RUN"]
-gistic.target <- cbind.data.frame(tmp1,tmp2)
-
-cnacomp.target <- NULL
-for (i in 1:nrow(gistic.target)) {
-  display.progress(index = i,totalN = nrow(gistic.target))
-  
-  # loss
-  tmp <- gistic.target[i,]
-  g <- rownames(tmp)
-  loci <- tmp$Cytoband
-  tmp <- data.frame(cna = as.numeric(tmp[,c(RNA_Clust1.target.cna,RNA_Clust2.target.cna)]),
-                    group = rep(c("C1","C2"),c(67,27)),
-                    stringsAsFactors = F)
-  loss <- amp <- tmp
-  loss$cna <- ifelse(loss$cna < 0,"LOSS","Others")
-  amp$cna <- ifelse(amp$cna > 0,"AMP","Others")
-  
-  loss.dt <- as.data.frame.array(table(loss$cna,loss$group))
-  amp.dt <- as.data.frame.array(table(amp$cna,amp$group))
-  
-  if(!is.element("AMP",rownames(amp.dt))) {
-    amp.pct <- c(0,0)
-    amp.p <- NA
-  } else {
-    amp.pct <- as.numeric(amp.dt[1,]/colSums(amp.dt))
-    amp.p <- fisher.test(amp.dt)$p.value
-  }
-  
-  if(!is.element("LOSS",rownames(loss.dt))) {
-    loss.pct <- c(0,0)
-    loss.p <- NA
-  } else {
-    loss.pct <- as.numeric(loss.dt[1,]/colSums(loss.dt))
-    loss.p <- fisher.test(loss.dt)$p.value
-  }
-  
-  cnacomp.target <- rbind.data.frame(cnacomp.target,
-                                   data.frame(gene = g,
-                                              loci = loci,
-                                              loss.C1 = loss.pct[1],
-                                              loss.C2 = loss.pct[2],
-                                              p.loss = loss.p,
-                                              amp.C1 = amp.pct[1],
-                                              amp.C2 = amp.pct[2],
-                                              p.amp = amp.p,
-                                              stringsAsFactors = F),
-                                   stringsAsFactors = F)
-  
-}
-rownames(cnacomp.target) <- cnacomp.target$gene
-write.table(cnacomp.target,file.path(res.path,"comparison of gene level cna in target cohort between two immune clusters.txt"),sep = "\t",row.names = F,quote = F)
-
-# copy number heatmap of microenvironment factors
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(target.wt))
-com_gene <- setdiff(com_gene,"HLA-DQB2")
-com_cna <- intersect(com_gene,cnacomp.target$gene)
-annRow.cna <- annRow[com_cna,,drop = F]
-
-plotdata <- cnacomp.target[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    " 
-p.value <- cnacomp.target[com_cna,"p.loss"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value,
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna loss percentage of microenviroment factors in target clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata[,1:2],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(47,89,97,121,125,131,134,149),
-         #gaps_col = 2,
-         labels_row = add.label)
-invisible(dev.off())
-
-plotdata <- cnacomp.target[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    "
-p.value <- cnacomp.target[com_cna,"p.amp"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in target clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata[,3:4],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(47,89,97,121,125,131,134,149),
-         #gaps_col = 2,
-         labels_row = add.label)
-invisible(dev.off())
-
-# redo target cohort using cbioportal data
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(target.wt))
-com_gene <- setdiff(com_gene,"HLA-DQB2")
-micro.gene <- micro.gene[com_gene,]
-com_cna <- intersect(com_gene,rownames(target.cna))
-
-cnacomp.target.cbio <- NULL
-for (i in 1:nrow(target.cna)) {
-  display.progress(index = i,totalN = nrow(target.cna))
-  
-  # loss
-  tmp <- target.cna[i,]
-  g <- rownames(tmp)
-  tmp <- data.frame(cna = as.numeric(tmp[,c(RNA_Clust1.target.cna,RNA_Clust2.target.cna,RNA_Clust3.target.cna)]),
-                    group = rep(c("C1","C2"),c(67,27)),
-                    stringsAsFactors = F)
-  loss <- amp <- tmp
-  loss$cna <- ifelse(loss$cna < 0,"LOSS","Others")
-  amp$cna <- ifelse(amp$cna > 0,"AMP","Others")
-  
-  loss.dt <- as.data.frame.array(table(loss$cna,loss$group))
-  amp.dt <- as.data.frame.array(table(amp$cna,amp$group))
-  
-  if(!is.element("AMP",rownames(amp.dt))) {
-    amp.pct <- c(0,0)
-    amp.p <- NA
-  } else {
-    amp.pct <- as.numeric(amp.dt[1,]/colSums(amp.dt))
-    amp.p <- fisher.test(amp.dt)$p.value
-  }
-  
-  if(!is.element("LOSS",rownames(loss.dt))) {
-    loss.pct <- c(0,0)
-    loss.p <- NA
-  } else {
-    loss.pct <- as.numeric(loss.dt[1,]/colSums(loss.dt))
-    loss.p <- fisher.test(loss.dt)$p.value
-  }
-  
-  cnacomp.target.cbio <- rbind.data.frame(cnacomp.target.cbio,
-                                     data.frame(gene = g,
-                                                loss.C1 = loss.pct[1],
-                                                loss.C2 = loss.pct[2],
-                                                p.loss = loss.p,
-                                                amp.C1 = amp.pct[1],
-                                                amp.C2 = amp.pct[2],
-                                                p.amp = amp.p,
-                                                stringsAsFactors = F),
-                                     stringsAsFactors = F)
-  
-}
-rownames(cnacomp.target.cbio) <- cnacomp.target.cbio$gene
-write.table(cnacomp.target.cbio,file.path(res.path,"comparison of gene level cna in target cohort between two immune clusters (cbioportal data).txt"),sep = "\t",row.names = F,quote = F)
-
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(target.wt))
-com_gene <- setdiff(com_gene,"HLA-DQB2")
-com_cna <- intersect(com_gene,cnacomp.target.cbio$gene)
-annRow.cna <- annRow[com_cna,,drop = F]
-
-plotdata <- cnacomp.target.cbio[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    "
-p.value <- cnacomp.target.cbio[com_cna,"p.loss"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna loss percentage of microenviroment factors in target clusters (cbioportal).pdf"),width = 8,height = 22)
-pheatmap(plotdata[,1:2],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(47,86,94,118,122,128,131,146),
-         labels_row = add.label)
-invisible(dev.off())
-
-plotdata <- cnacomp.target.cbio[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    "
-p.value <- cnacomp.target.cbio[com_cna,"p.amp"]
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value,
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in target clusters (cbioportal).pdf"),width = 8,height = 22)
-pheatmap(plotdata[,3:4],
-         cluster_rows = F,cluster_cols = F,
-         border_color = NA,
-         color = bluered(64),
-         annotation_row = annRow.cna[rownames(plotdata),,drop = F],
-         annotation_colors = annColors.micro,
-         gaps_row = c(47,86,94,118,122,128,131,146),
-         labels_row = add.label)
-invisible(dev.off())
-
-# common loss and gain in both cohort
-com_loss <- intersect(cnacomp.gaby[which(cnacomp.gaby$p.loss < 0.05),"gene"],
-                      cnacomp.target.cbio[which(cnacomp.target.cbio$p.loss < 0.05),"gene"])
-com_loss <- intersect(micro.gene$Symbol,com_loss)
-
-com_gain <- intersect(cnacomp.gaby[which(cnacomp.gaby$p.amp < 0.05),"gene"],
-                      cnacomp.target.cbio[which(cnacomp.target.cbio$p.amp < 0.05),"gene"])
-com_gain <- intersect(micro.gene$Symbol,com_gain)
 
 #---------------------------------------------------------------#
 # map full list of cibersort CD8 and CD4 to original CCR cluter #
@@ -3935,7 +3529,6 @@ rms2curve <- function(surv.df = NULL, immune.matrix = NULL, main.marker = NULL, 
   cat("Please make sure the survival time is based on month!\n")
   com_sam <- intersect(rownames(surv.df),colnames(immune.matrix))
   surv.df <- surv.df[com_sam,]
-  #immune.matrix <- exp(immune.matrix[,com_sam])
   immune.matrix <- immune.matrix[,com_sam]
   
   surv.time <- surv.df$OS.time
@@ -5231,7 +4824,7 @@ p <- pheatmap(as.matrix(plotdata),
 pdf(file.path(fig.path, "HRS signature heatmap of wilms tumors in gaby cohort.pdf"), height=8,width = 15)
 draw(p, annotation_legend_side = "bottom", heatmap_legend_side = "left")
 invisible(dev.off())
-fisher.test(table(annCol.wt.gaby.genomic.alter$HRS,annCol.wt.gaby.genomic.alter$`TP53 mutations`),alternative = "less") # 0.119
+fisher.test(table(annCol.wt.gaby.genomic.alter$HRS,annCol.wt.gaby.genomic.alter$`TP53 mutations`)) # 0.119
 fisher.test(matrix(c(4,0,1,5),byrow = T,ncol = 2)) # 0.04762
 fisher.test(table(annCol.wt.gaby.genomic.alter$HRS,annCol.wt.gaby.genomic.alter$RNA_Clust)) # 0.04762
 
@@ -5264,7 +4857,7 @@ pdf(file.path(fig.path, "HRS signature heatmap of wilms tumors in target cohort.
 draw(p, annotation_legend_side = "bottom", heatmap_legend_side = "left")
 invisible(dev.off())
 
-fisher.test(table(annCol.target114$HRS,annCol.target114$TP53_MUT),alternative = "less") # 0.04707
+fisher.test(table(annCol.target114$HRS,annCol.target114$TP53_MUT)) # 0.04707
 fisher.test(table(annCol.target114$HRS,annCol.target114$tune_Clust)) # 7.497e-05
 
 fisher.test(table(annCol.target114$HRS,annCol.target114$HISTOLOGY)) # 0.003
@@ -5355,7 +4948,7 @@ wilcox.test(tmp1,tmp2)
 
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-High"),2]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-Low"),2]
-wilcox.test(tmp1,tmp2, alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(4,6)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5374,7 +4967,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-High"),5]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-Low"),5]
-wilcox.test(tmp1,tmp2, alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(4,6)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5433,7 +5026,7 @@ invisible(dev.off())
 ## HDAC inhibitor
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-High"),"Vorinostat"]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$HRS == "RS-Low"),"Vorinostat"]
-wilcox.test(tmp1,tmp2,alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(4,6)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5452,7 +5045,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Wild"),"Vorinostat"]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Mutated"),"Vorinostat"]
-wilcox.test(tmp1,tmp2,alternative = "greater")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("TME-C1","TME-C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("TME-C1","TME-C2"))
@@ -5588,7 +5181,7 @@ boxplot(tmp1,tmp2)
 
 tmp1 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-High"),2]
 tmp2 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-Low"),2]
-wilcox.test(tmp1,tmp2, alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(65,31)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5607,7 +5200,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-High"),5]
 tmp2 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-Low"),5]
-wilcox.test(tmp1,tmp2, alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(65,31)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5666,7 +5259,7 @@ invisible(dev.off())
 ## HDAC inhibitor
 tmp1 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-High"),"Vorinostat"]
 tmp2 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$HRS == "RS-Low"),"Vorinostat"]
-wilcox.test(tmp1,tmp2,alternative = "less")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("RS-High","RS-Low"),c(65,31)))
 tmp$mut <- factor(tmp$mut,levels = c("RS-High","RS-Low"))
@@ -5685,7 +5278,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$TME == "C1"),"Vorinostat"]
 tmp2 <- gdsc.pred.auc.target[which(gdsc.pred.auc.target$TME == "C2"),"Vorinostat"]
-wilcox.test(tmp1,tmp2,alternative = "greater")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("tTME-C1","tTME-C2"),c(69,27)))
 tmp$mut <- factor(tmp$mut,levels = c("tTME-C1","tTME-C2"))
@@ -6395,7 +5988,7 @@ for (i in intersect(ctrp.drug$drug,colnames(ctrp.pred.auc.ccle))) {
   tmp <- ctrp.pred.auc.ccle[,c(i,"TME","HRS")]
   tmp1 <- tmp[which(tmp$TME == "cTME-C1"),i]
   tmp2 <- tmp[which(tmp$TME == "cTME-C2"),i]
-  wt <- wilcox.test(tmp1,tmp2,alternative = "greater")
+  wt <- wilcox.test(tmp1,tmp2)
   
   outTab.TME <- rbind.data.frame(outTab.TME,
                                  data.frame(drug = i,
@@ -6408,7 +6001,7 @@ for (i in intersect(ctrp.drug$drug,colnames(ctrp.pred.auc.ccle))) {
   
   tmp1 <- tmp[which(tmp$HRS == "RS-High"),i]
   tmp2 <- tmp[which(tmp$HRS == "RS-Low"),i]
-  wt <- wilcox.test(tmp1,tmp2,alternative = "less")
+  wt <- wilcox.test(tmp1,tmp2)
   outTab.HRS <- rbind.data.frame(outTab.HRS,
                                  data.frame(drug = i,
                                             class = ctrp.drug[which(ctrp.drug$drug == i),"target"],
@@ -6715,7 +6308,7 @@ gaby.cna.arm$TP53 <- ifelse(gaby.cna.arm$TP53 == "","Wild","Mutant")
 p <- c()
 for (i in setdiff(colnames(gaby.cna.arm),"TP53")) {
   tmp <- gaby.cna.arm[,c(i,"TP53")]
-  p <- c(p,fisher.test(table(tmp[,i],tmp[,2]),alternative = "less")$p.value)
+  p <- c(p,fisher.test(table(tmp[,i],tmp[,2]))$p.value)
 }
 names(p) <- setdiff(colnames(gaby.cna.arm),"TP53")
 p
@@ -6761,10 +6354,10 @@ table(target.cna.arm$`14q`,target.cna.arm$TME)
 # GAIN        1      0
 # LOSS        7      7
 # NORMAL     59     20
-fisher.test(matrix(c(7,7,60,20),byrow = T,ncol = 2),alternative = "less") # 0.06
+fisher.test(matrix(c(7,7,60,20),byrow = T,ncol = 2)) # 0.06
 
 table(target.cna.arm$`17q`,target.cna.arm$TME)
-fisher.test(matrix(c(8,4,59,23),byrow = T,ncol = 2),alternative = "less")
+fisher.test(matrix(c(8,4,59,23),byrow = T,ncol = 2))
 
 # check focal-level CNA regarding TME cluster
 gaby.cna.focal <- read.table(file.path(data.path,"GISTIC/Gaby_Wilms_all/Gaby_wilms_0.2_0.75.all_lesions.conf_75.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
@@ -6819,7 +6412,7 @@ for (i in comregulon) {
   tmp1 <- regulon.gaby.sel[RNA_Clust1,i]
   tmp2 <- regulon.gaby.sel[RNA_Clust2,i]
   
-  wt <- wilcox.test(tmp1,tmp2,alternative = "less")
+  wt <- wilcox.test(tmp1,tmp2)
   outTab <- rbind.data.frame(outTab,
                              data.frame(reglon = i,
                                         avgTME1 = mean(tmp1),
@@ -6857,7 +6450,7 @@ for (i in comregulon) {
   tmp1 <- regulon.target.sel[RNA_Clust1.target,i]
   tmp2 <- regulon.target.sel[RNA_Clust2.target,i]
   
-  wt <- wilcox.test(tmp1,tmp2,alternative = "less")
+  wt <- wilcox.test(tmp1,tmp2)
   outTab <- rbind.data.frame(outTab,
                              data.frame(reglon = i,
                                         avgTME1 = mean(tmp1),
@@ -6897,7 +6490,7 @@ for (i in comregulon) {
   tmp1 <- regulon.ccle.sel[RNA_Clust1.ccle,i]
   tmp2 <- regulon.ccle.sel[RNA_Clust2.ccle,i]
   
-  wt <- wilcox.test(tmp1,tmp2,alternative = "less")
+  wt <- wilcox.test(tmp1,tmp2)
   outTab <- rbind.data.frame(outTab,
                              data.frame(reglon = i,
                                         avgTME1 = mean(tmp1),
@@ -7428,7 +7021,7 @@ ezh2.path.target.dawt <- gsva(expr = as.matrix(target.wt[,rownames(annCol.target
                               method = "ssgsea")
 ezh2.path.target.dawt.c1 <- as.numeric(ezh2.path.target.dawt[1,RNA_Clust1.target.dawt])
 ezh2.path.target.dawt.c2 <- as.numeric(ezh2.path.target.dawt[1,RNA_Clust2.target.dawt])
-wilcox.test(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2, alternative = "less")
+wilcox.test(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2)
 tmp <- data.frame(exp = c(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2),
                   mut = rep(c("C1","C2"),c(24,12)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
@@ -7446,7 +7039,7 @@ invisible(dev.off())
 
 tmp1 <- annCol.cbio[RNA_Clust1.target.dawt,"Fraction Genome Altered"]
 tmp2 <- annCol.cbio[RNA_Clust2.target.dawt,"Fraction Genome Altered"]
-wilcox.test(tmp1,tmp2,alternative = "greater")
+wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Desert","Infiltrated"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
@@ -8358,7 +7951,7 @@ invisible(dev.off())
 # comparison of drug sensitivity between tme #
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Wild"),2]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Mutated"),2]
-t.test(tmp1,tmp2, alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("TME-C1","TME-C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("TME-C1","TME-C2"))
@@ -8377,7 +7970,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Wild"),5]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Mutated"),5]
-t.test(tmp1,tmp2, alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("TME-C1","TME-C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("TME-C1","TME-C2"))
@@ -8415,7 +8008,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.target.dawt[which(gdsc.pred.auc.target.dawt$TME == "C1"),5]
 tmp2 <- gdsc.pred.auc.target.dawt[which(gdsc.pred.auc.target.dawt$TME == "C2"),5]
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("C1","C2"),c(24,12)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
@@ -8434,7 +8027,7 @@ invisible(dev.off())
 
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Wild"),"Vorinostat"]
 tmp2 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Mutated"),"Vorinostat"]
-t.test(tmp1,tmp2,alternative = "greater")
+t.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("TME-C1","TME-C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("TME-C1","TME-C2"))
@@ -8821,8 +8414,8 @@ wt3$EZH2.curated <- as.numeric(wt3$EZH2)
 #wt3$EZH2.curated[38] <- 50
 #wt3$EZH2.curated[53] <- 90
 
-cor.test(wt3$EZH2.curated,wt3$CD3_10HPF,method = "spearman",alternative = "less")
-cor.test(wt3$EZH2.curated,wt3$CD8_10HPF,method = "spearman",alternative = "less")
+cor.test(wt3$EZH2.curated,wt3$CD3_10HPF,method = "spearman")
+cor.test(wt3$EZH2.curated,wt3$CD8_10HPF,method = "spearman")
 
 mycol2 <- brewer.pal(12, "Paired")
 
@@ -8897,8 +8490,8 @@ ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte cou
 
 # do the correlation differently
 tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","EZH2.curated","OS","OS.time","PFS","PFS.time")]
-cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "pearson",alternative = "less")
-cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "pearson",alternative = "less")
+cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "pearson")
+cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "pearson")
 
 tmp <- data.frame(count = c(tmp1$CD3_10HPF, tmp1$CD8_10HPF),
                   gene = c(tmp1$EZH2.curated,tmp1$EZH2.curated),
@@ -8938,8 +8531,8 @@ ggplot(tmp, aes(x=gene, y=count, shape = lymphocyte, color = lymphocyte)) +
 ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte count and ezh2 in 12 anaplastic out of 55 wts.pdf"), width = 5,height = 5)
 
 tmp1 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","EZH2.curated","OS","OS.time","PFS","PFS.time")]
-cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "spearman",alternative = "less")
-cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "spearman",alternative = "less")
+cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "spearman")
+cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "spearman")
 
 tmp <- data.frame(count = c(tmp1$CD3_10HPF, tmp1$CD8_10HPF),
                   gene = c(tmp1$EZH2.curated,tmp1$EZH2.curated),
@@ -9558,7 +9151,7 @@ tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
 tmp1$TP53 <- NA
 tmp1[intersect(rownames(tmp1),rownames(tp53.yes)),"TP53"] <- "yes"
 tmp1[intersect(rownames(tmp1),rownames(tp53.no)),"TP53"] <- "no"
-fisher.test(table(tmp1$TP53,tmp1$group),alternative = "greater")
+fisher.test(table(tmp1$TP53,tmp1$group))
 
 fitd <- survdiff(Surv(OS.time, OS) ~ group,
                  data      = tmp1,
@@ -9650,7 +9243,7 @@ tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
 tmp1$TP53 <- NA
 tmp1[intersect(rownames(tmp1),rownames(tp53.yes)),"TP53"] <- "yes"
 tmp1[intersect(rownames(tmp1),rownames(tp53.no)),"TP53"] <- "no"
-fisher.test(table(tmp1$TP53,tmp1$group),alternative = "greater")
+fisher.test(table(tmp1$TP53,tmp1$group))
 
 fitd <- survdiff(Surv(OS.time, OS) ~ group,
                  data      = tmp1,
