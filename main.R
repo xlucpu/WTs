@@ -2,7 +2,6 @@
 # PROJECT: WILMS PROJECY #
 #    START: 2020/4/21    #
 
-#workdir <- "D:/Project/Wilms"; setwd(workdir)
 workdir <- "E:/IGBMC/myproject/Wilms"; setwd(workdir)
 tumor.path <- workdir; tumorname <- "Wilms"
 fig.path <- file.path(workdir,"Figures")
@@ -79,28 +78,18 @@ pca2batch <- function(indata, batch, batchvar = colnames(batch), fig.dir, PCA.fi
   if (is.null(cols)) { 
     cols <- rainbow(N.batch1) 
   }else{
-    if (length(cols) != N.batch1) {stop("cols length not equal to batch length")}
+    if (length(cols) != N.batch1) {stop("cols length not equal to batch length")} 
   }           
   
   indata=na.omit(indata)
-  pca <- SamplePCA(indata, usecor=F, center=F) 
-  pct1 <- round (pca@variances[xy[1]]/sum(pca@variances), digits=3)*100 
-  pct2 <- round (pca@variances[xy[2]]/sum(pca@variances), digits=3)*100
+  pca <- SamplePCA(indata, usecor=F, center=F)
+  pct1 <- round (pca@variances[xy[1]]/sum(pca@variances), digits=3)*100
+  pct2 <- round (pca@variances[xy[2]]/sum(pca@variances), digits=3)*100 
   xlab.text = paste("PC", xy[1], ": ", as.character(pct1), "% variance", sep="")
   ylab.text = paste("PC", xy[2], ": ", as.character(pct2), "% variance", sep="")
   
   if(withoutgrid) {
-    outfile = file.path(fig.dir, paste(PCA.fig.title, ".withoutgrid.pdf",sep=""))
-    
-    pdf(file=outfile, width = width, height = height)
-    par(mar = par()$mar + c(0,0,0,6))
-    plot(pca@scores[,xy[1]], pca@scores[,xy[2]], 
-         cex=cex, xlab=xlab.text, ylab=ylab.text,
-         col=cols[factor(batch[,batchvar[1]])], 
-         pch=(pch.orginal:(pch.orginal-1+N.batch2))[factor(batch[,batchvar[2]])])
-    abline(h=0, v=0, col="brown", lty=2)
-  } else {
-    outfile = file.path(fig.dir, paste(PCA.fig.title, ".withgrid.pdf",sep="")) 
+    outfile = file.path(fig.dir, paste(PCA.fig.title, ".withoutgrid.pdf",sep="")) 
     
     pdf(file=outfile, width = width, height = height)
     par(mar = par()$mar + c(0,0,0,6)) 
@@ -108,7 +97,17 @@ pca2batch <- function(indata, batch, batchvar = colnames(batch), fig.dir, PCA.fi
          cex=cex, xlab=xlab.text, ylab=ylab.text,
          col=cols[factor(batch[,batchvar[1]])], 
          pch=(pch.orginal:(pch.orginal-1+N.batch2))[factor(batch[,batchvar[2]])])
-    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "gray80") 
+    abline(h=0, v=0, col="brown", lty=2)
+  } else {
+    outfile = file.path(fig.dir, paste(PCA.fig.title, ".withgrid.pdf",sep=""))
+    
+    pdf(file=outfile, width = width, height = height)
+    par(mar = par()$mar + c(0,0,0,6))
+    plot(pca@scores[,xy[1]], pca@scores[,xy[2]], 
+         cex=cex, xlab=xlab.text, ylab=ylab.text,
+         col=cols[factor(batch[,batchvar[1]])], 
+         pch=(pch.orginal:(pch.orginal-1+N.batch2))[factor(batch[,batchvar[2]])])
+    rect(par("usr")[1],par("usr")[3],par("usr")[2],par("usr")[4],col = "gray80")
     
     par(new=TRUE)
     plot(pca@scores[,xy[1]], pca@scores[,xy[2]], 
@@ -118,14 +117,14 @@ pca2batch <- function(indata, batch, batchvar = colnames(batch), fig.dir, PCA.fi
     grid (lty = 1, col = "white",lwd=2)
   }
   
-  if (showID) {
+  if (showID) { 
     text(pca@scores[,xy[1]], pca@scores[,xy[2]], colnames(indata), lwd=1, cex=cex)
   }
-  if(showLegend){
+  if(showLegend){ 
     par(xpd = TRUE) #all plotting is clipped to the figure region
     legend(pos1,fill = cols,
            legend=names(table(factor(batch[,batchvar[1]]))),
-           inset=c(-batch1move,0), 
+           inset=c(-batch1move,0),
            border = NA,bty = "n")
     legend(pos2,legend=names(table(factor(batch[,batchvar[2]]))),
            border = NA,bty = "n",
@@ -174,9 +173,6 @@ rcc.sam <- Sinfo[which(Sinfo$SampleType != "Normal" & Sinfo$to.add.for.analysis.
 rcc.sam <- rownames(rcc.sam[which(rcc.sam$Subtype %in% c("Diffuse anaplastic WT","Focal anaplastic WT","KICH","KIRC","KIRP","gKIRC")),]) # remove bellini cancers
 target.sam <- rownames(Sinfo[which(Sinfo$Subtype == "TARGET_Wilm"),])
 all.sam <- c(rcc.sam,target.sam)
-set.seed(2020)
-target.sam.sel <- sample(target.sam,15)
-
 annCol.all.gaby <- Sinfo[all.sam,1:2]
 annCol.all.gaby$Cohort <- ifelse(annCol.all.gaby$Subtype %in% c("BLCA","KICH","KIRC","KIRP","TRCC"),"TCGA",
                                  ifelse(annCol.all.gaby$Subtype == "TARGET_Wilm","TARGET","GABY"))
@@ -192,44 +188,47 @@ annColors.all.gaby <- list("Subtype" = c("gKIRC" = mycol[1],
                                         "TARGET" = seagreen,
                                         "TCGA" = yellow))
 
+set.seed(20000112)
+target.fhwt.sel <- sample(rownames(annCol.target.fhwt),15)
+
 # generate expression data for all selected tumor samples
-all.exp <- TPM[,c(rcc.sam,target.sam.sel)]
+all.exp <- TPM[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)]
 all.logexp <- log2(all.exp + 1)
 indata <- all.logexp[rowSums(all.logexp) > 0,]
 
 # pca to view the batches
-batchPCA(indata = indata[,c(rcc.sam,target.sam.sel.modified)],
-         batch = annCol.all.gaby[c(rcc.sam,target.sam.sel.modified),"Cohort"],
+batchPCA(indata = indata[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)],
+         batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),"Cohort"],
          fig.dir = fig.path,
-         PCA.fig.title = "PCA.all.gaby",
+         PCA.fig.title = "PCA.all.gaby3",
          cols = annColors.all.gaby$Cohort,
          showID = F,
          cex = 0.9,
          showLegend = T)
 
 tmp <- annCol.all.gaby
-tmp <- rbind.data.frame(tmp[tmp$SampleType == "Tumor",],tmp[target.sam.sel.modified,])
+tmp <- rbind.data.frame(tmp[tmp$SampleType == "Tumor",],tmp[c(target.dawt.sel,target.fhwt.sel),])
 tmp <- Sinfo[rownames(tmp),]
-write.table(tmp,file.path(res.path,"randomly selected 80 kidney tumor.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+write.table(tmp,file.path(res.path,"randomly selected 95 kidney tumor3.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
 
 # remove batch effect by combat
 library(sva)
-modcombat = model.matrix(~1, data=annCol.all.gaby[c(rcc.sam,target.sam.sel),])
-all.logexp.combat = ComBat(dat=as.matrix(indata), batch=annCol.all.gaby[c(rcc.sam,target.sam.sel),"Cohort"], mod=modcombat)
-batchPCA(indata = all.logexp.combat[,c(rcc.sam,target.sam.sel.modified)],
-         batch = annCol.all.gaby[c(rcc.sam,target.sam.sel.modified),"Cohort"],
+modcombat = model.matrix(~1, data=annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),])
+all.logexp.combat = ComBat(dat=as.matrix(indata), batch=annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),"Cohort"], mod=modcombat)
+batchPCA(indata = all.logexp.combat[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)],
+         batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),"Cohort"],
          fig.dir = fig.path,
-         PCA.fig.title = "PCA.all.gaby.combat",
+         PCA.fig.title = "PCA.all.gaby.combat3",
          cols = annColors.all.gaby$Cohort,
          showID = F,
          cex = 0.9,
          showLegend = T)
 
-pca2batch(indata = all.logexp.combat[,c(rcc.sam,target.sam.sel.modified)],
-          batch = annCol.all.gaby[c(rcc.sam,target.sam.sel.modified),],
+pca2batch(indata = all.logexp.combat[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)],
+          batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),],
           batchvar = c("Subtype","Cohort"),
           fig.dir = fig.path,
-          PCA.fig.title = "PCA.all.gaby.combat.subtype",
+          PCA.fig.title = "PCA.all.gaby.combat.subtype3",
           cols = as.character(annColors.all.gaby$Subtype[sort(names(annColors.all.gaby$Subtype))]),
           showID = F,
           cex = 0.8,
@@ -240,54 +239,73 @@ pca2batch(indata = all.logexp.combat[,c(rcc.sam,target.sam.sel.modified)],
           withoutgrid = T) 
 
 # kirc sample batches
-tmp <- annCol.all.gaby[c(rcc.sam,target.sam.sel.modified),]
+tmp <- annCol.all.gaby[c(rcc.sam,target.dawt.sel,target.fhwt.sel),]
 tmp <- tmp[which(tmp$Subtype %in% c("KIRC","gKIRC")),]
 batchPCA(indata = all.logexp.combat[,rownames(tmp)],
          batch = annCol.all.gaby[rownames(tmp),"Subtype"],
          fig.dir = fig.path,
-         PCA.fig.title = "PCA.kirc.tumors.combat",
+         PCA.fig.title = "PCA.kirc.tumors.combat3",
          cols = c(red,blue),
          showID = T,
          cex = 0.6,
          showLegend = T)
 
 # calculate estimate score
-tmp <- as.data.frame(all.logexp.combat[,c(rcc.sam,target.sam.sel.modified)])
+tmp <- as.data.frame(all.logexp.combat[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)])
 tmp$symbol <- Ginfo[rownames(tmp),"genename"]
 tmp <- apply(tmp[,setdiff(colnames(tmp), "symbol")], 2, function(x) tapply(x, INDEX=factor(tmp$symbol), FUN=median, na.rm=TRUE))
-write.table(tmp, file.path(res.path,"all_with_random_15sam_of_TARGET_estimate.input.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-filterCommonGenes(input.f=file.path(res.path, "all_with_random_15sam_of_TARGET_estimate.input.txt") , output.f=file.path(res.path,"all_with_random_15sam_of_TARGET_ESTIMATE.txt"), id="GeneSymbol")
-estimateScore(file.path(res.path,"all_with_random_15sam_of_TARGET_ESTIMATE.txt"), file.path(res.path,"all_with_random_15sam_of_TARGET_estimate_score.txt"), platform="affymetrix")
-est <- read.table(file = file.path(res.path,"all_with_random_15sam_of_TARGET_estimate_score.txt"),header = T,row.names = NULL,check.names = F,stringsAsFactors = F,sep = "\t")
+write.table(tmp, file.path(res.path,"all_with_random_30sam_of_TARGET_estimate.input2.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+filterCommonGenes(input.f=file.path(res.path, "all_with_random_30sam_of_TARGET_estimate.input2.txt") , output.f=file.path(res.path,"all_with_random_30sam_of_TARGET_ESTIMATE2.txt"), id="GeneSymbol")
+estimateScore(file.path(res.path,"all_with_random_30sam_of_TARGET_ESTIMATE2.txt"), file.path(res.path,"all_with_random_30sam_of_TARGET_estimate_score2.txt"), platform="affymetrix")
+est <- read.table(file = file.path(res.path,"all_with_random_30sam_of_TARGET_estimate_score2.txt"),header = T,row.names = NULL,check.names = F,stringsAsFactors = F,sep = "\t")
 rownames(est) <- est[,2]; colnames(est) <- est[1,]; est <- est[-1,c(-1,-2)];
 est <- sapply(est, as.numeric); rownames(est) <- c("StromalScore","ImmuneScore","ESTIMATEScore","TumorPurity")
 colnames(est) <- colnames(indata); est.backup <- est
 est <- annTrackScale(indata = est, halfwidth = 2, poolsd = F); est <- as.data.frame(t(est))
 
+annCol.all.gaby <- Sinfo[all.sam,1:2]
+annCol.all.gaby$Cohort <- ifelse(annCol.all.gaby$Subtype %in% c("BLCA","KICH","KIRC","KIRP","TRCC"),"TCGA",
+                                 ifelse(annCol.all.gaby$Subtype == "TARGET_Wilm","TARGET","GABY"))
 annCol.all.gaby <- cbind.data.frame(annCol.all.gaby, est[rownames(annCol.all.gaby),c("ImmuneScore","StromalScore")])
+annCol.all.gaby <- cbind.data.frame(annCol.all.gaby, as.data.frame(t(est.backup))[rownames(annCol.all.gaby),"TumorPurity",drop = F])
+
 annColors.all.gaby[["ImmuneScore"]] <- greenred(64)
 annColors.all.gaby[["StromalScore"]] <- greenred(64)
 
 # identify optimal cluster number
-indata <- all.logexp.combat[,c(rcc.sam,target.sam.sel.modified)]
-# indata <- indata[rowSums(indata > 1) > 0.9*ncol(indata),]
+indata <- all.logexp.combat[,c(rcc.sam,target.dawt.sel,target.fhwt.sel)]
 var <- apply(indata, 1, mad)
-# var <- apply(indata, 1, sd)
 sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-# sel_gene <- var[order(var,decreasing = T)][1:1000]
+sel_gene2 <- var[order(var,decreasing = T)][1:500]
 indata <- indata[names(sel_gene),]
-BICplot(geneExp = indata,
-        figure.dir = fig.path,
-        figlable = "logcombat_with_random_15sam_of_TARGET",
-        Kmax = 10)
+
+annCol.random <- annCol.all.gaby[colnames(indata),c(2,3,4,5)]
+annCol.random[which(annCol.random$Subtype == "Diffuse anaplastic WT"),"Subtype"] <- "DAWT"
+annCol.random[which(annCol.random$Subtype == "Focal anaplastic WT"),"Subtype"] <- "FAWT"
+annCol.random[which(annCol.random$Subtype == "gKIRC"),"Subtype"] <- "KIRC"
+annCol.random[target.dawt.sel,"Subtype"] <- "DAWT"
+annCol.random[target.fhwt.sel,"Subtype"] <- "FHWT"
+
+annColors.random <- list("Subtype" = c(
+  "KIRC" = mycol[1],
+  "DAWT" = mycol[2],
+  "FAWT" = mycol[3],
+  "FHWT" = mycol[4],
+  "KIRP" = mycol[5],
+  "KICH" = mycol[6]),
+  "Cohort" = c("GABY" = darkblue,
+               "TARGET" = seagreen,
+               "TCGA" = yellow))
+annColors.random[["ImmuneScore"]] <- greenred(64)
+annColors.random[["StromalScore"]] <- greenred(64)
 
 # use consensus hierachical clustering
 N.cluster <- 5
 N.bootstrap <- 500
 N.gene.per.bootstrap <- round(0.9*nrow(indata))
 N.sample.per.bootstrap <- round(0.9*ncol(indata))
-map.res.path <- file.path(tumor.path, paste("commonCluster2_combat_log2TPM_ClusterNum",N.cluster,sep = ""))
-featType <- "all_with_random_15sam_of_TARGET"
+map.res.path <- file.path(tumor.path, paste("commonCluster3_dawt_fhwt_combat_log2TPM_ClusterNum",N.cluster,sep = ""))
+featType <- "all_with_random_30sam_of_TARGET3"
 
 cluster.all.ans <- plot.common.cluster(indata, 
                                        tumorname=tumorname, 
@@ -297,14 +315,14 @@ cluster.all.ans <- plot.common.cluster(indata,
                                        N.sample.per.bootstrap=N.sample.per.bootstrap, 
                                        map.res.path=map.res.path, fig.path=fig.path, 
                                        featType=featType,
-                                       annCol=annCol.all.gaby[colnames(indata),c(2,3,4,5)], annColors=annColors.all.gaby, 
-                                       seed=2020415, 
-                                       dist0="pearson", link0 = "ward.D2",
-                                       dist="pearson", link = "ward.D2",
+                                       annCol=annCol.random[colnames(indata),], annColors=annColors.random, 
+                                       seed=20000112, 
+                                       dist0="euclidean", link0 = "ward.D",
+                                       dist="euclidean", link = "ward.D",
                                        clstCol = mycol[1:5], 
                                        height = 7, dendsort = T)
 
-pdf(file.path(fig.path, "consensus heatmap of all tumors with random 15 TARGET.pdf"), height=8,width = 10)
+pdf(file.path(fig.path, "consensus heatmap of all tumors with random 30 TARGET3.pdf"), height=8,width = 10)
 pheatmap(as.matrix(cluster.all.ans$sum),
          cluster_rows = as.hclust(cluster.all.ans$dendro),
          cluster_cols = as.hclust(cluster.all.ans$dendro),
@@ -320,67 +338,66 @@ pheatmap(as.matrix(cluster.all.ans$sum),
          fontsize_col = 4)
 invisible(dev.off())
 
-hcg <- hclust(distanceMatrix(as.matrix(t(indata)), "pearson"), "ward.D2")
-plotdata <- standarize.fun(indata,halfwidth = 2)
+hcg <- hclust(distanceMatrix(as.matrix(t(indata[names(sel_gene2),])), "euclidean"), "ward.D")
+plotdata <- standarize.fun(indata[names(sel_gene2),],halfwidth = 2)
 use_raster <- F
-pheatmap(as.matrix(plotdata),
-         cluster_rows = dendsort(hcg),
-         cluster_cols = as.hclust(cluster.all.ans$dendro),
-         border_color = NA,
-         annotation_col = cluster.all.ans$annCol,
-         annotation_colors = cluster.all.ans$annColors,
-         color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         show_colnames = F,
-         show_rownames = F,
-         cellwidth = 3,
-         cellheight = 0.05,
-         fontsize_col = 4)
-pdf(file.path(fig.path, "expression heatmap of all tumors with random 15 TARGET.pdf"), height=8,width = 10)
+p <- pheatmap(as.matrix(plotdata),
+              cluster_rows = dendsort(hcg),
+              cluster_cols = as.hclust(cluster.all.ans$dendro),
+              border_color = NA,
+              annotation_col = cluster.all.ans$annCol[,c(1,2,5)],
+              annotation_colors = cluster.all.ans$annColors,
+              color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
+              # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
+              treeheight_row = 15,
+              treeheight_col = 15,
+              show_colnames = F,
+              show_rownames = F,
+              cellwidth = 2,
+              cellheight = 200/nrow(plotdata),
+              fontsize_col = 4)
+pdf(file.path(fig.path, "expression heatmap of all tumors with random 30 TARGET3.pdf"), height=8,width = 10)
 draw(p, annotation_legend_side = "left", use_raster = F)
 invisible(dev.off())
-
-tmp <- cluster.all.ans$annCol
-tmp$raw.immune.score <- as.numeric(est.backup["ImmuneScore",rownames(tmp)])
-tmp$raw.stromal.score <- as.numeric(est.backup["StromalScore",rownames(tmp)])
-
-tmp1 <- tmp[which(tmp$Clustering == "cluster3"),"raw.immune.score"]
-tmp2 <- tmp[which(tmp$Clustering == "cluster4"),"raw.immune.score"]
-wilcox.test(tmp1,tmp2) # 6.903e-06
-
-tmp1 <- tmp[which(tmp$Clustering == "cluster3"),"raw.stromal.score"]
-tmp2 <- tmp[which(tmp$Clustering == "cluster4"),"raw.stromal.score"]
-wilcox.test(tmp1,tmp2) # 1.028e-05
 
 # calculate immune enrichment score and re-cluster
-indata <- read.table(file.path(res.path,"all_with_random_15sam_of_TARGET_estimate.input.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F)
+indata <- read.table(file.path(res.path,"all_with_random_30sam_of_TARGET_estimate.input2.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F)
 indata <- gsva(expr = as.matrix(indata),
-            gset.idx.list = immune.sig.ccr,
-            method = "gsva")
-hcs <- hclust(distanceMatrix(as.matrix(indata), "euclidean"), "ward.D"); hcs.random15 <- hcs
+               gset.idx.list = immune.sig.ccr,
+               method = "gsva")
+hcs <- hclust(distanceMatrix(as.matrix(indata), "euclidean"), "ward.D"); hcs.random30 <- hcs
 plotdata <- standarize.fun(indata,halfwidth = 2)
 p <- pheatmap(as.matrix(plotdata[immune.sig.ccr.order,]),
-         cluster_rows = F,
-         cluster_cols = hcs,
-         border_color = NA,
-         annotation_col = cluster.all.ans$annCol,
-         annotation_colors = cluster.all.ans$annColors,
-         #color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         color = inferno(64),
-         gaps_row = c(14,22),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         show_colnames = F,
-         show_rownames = T,
-         cellwidth = 3,
-         cellheight = 8,
-         fontsize_col = 4,
-         fontsize_row = 8)
-pdf(file = file.path(fig.path,"CCR immune signature heatmap of all with random 15sam of target in 2 clusters.pdf"), width = 10,height = 8)
+              cluster_rows = F,
+              cluster_cols = hcs,
+              border_color = NA,
+              annotation_col = cluster.all.ans$annCol,
+              annotation_colors = cluster.all.ans$annColors,
+              #color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
+              color = NMF:::ccRamp(heatmap.BlBkRd,64),
+              #color = inferno(64),
+              gaps_row = c(14,22),
+              treeheight_row = 15,
+              treeheight_col = 15,
+              show_colnames = F,
+              show_rownames = T,
+              cellwidth = 2,
+              cellheight = 8,
+              fontsize_col = 4,
+              fontsize_row = 8)
+pdf(file = file.path(fig.path,"CCR immune signature heatmap of all with random 30sam of target in 2 clusters3.pdf"), width = 10,height = 8)
 draw(p, annotation_legend_side = "left", use_raster = F)
 invisible(dev.off())
+
+table(cluster.all.ans$annCol$Subtype,cluster.all.ans$annCol$Clustering)
+# cluster1 cluster2 cluster3 cluster4 cluster5
+# DAWT       14        0        8        0        0
+# FAWT        0        0        3        0        0
+# FHWT       10        1        4        0        0
+# KICH        0        0        0        0       15
+# KIRC        2       22        0        0        1
+# KIRP        0        1        2       12        0
+fisher.test(matrix(c(3,0,12,14+10+1), byrow = T,nrow = 2))
 
 # 3. clustering analysis by using only diffuse and focal WT
 wt.gaby.sam <- rownames(Sinfo[which(Sinfo$Subtype %in% c("Diffuse anaplastic WT","Focal anaplastic WT") & Sinfo$to.add.for.analysis.for.WT.project.06042020 == "yes"),])
@@ -391,12 +408,8 @@ annColors.wt.gaby <- list("Subtype" = c("Diffuse anaplastic WT" = darkblue,"Foca
 indata <- log2(TPM[,wt.gaby.sam] + 1)
 indata <- indata[rowSums(indata) > 0,]
 var <- apply(indata, 1, mad)
-# var <- apply(indata, 1, sd)
 sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-# sel_gene <- var[order(var,decreasing = T)][1:1000]
 indata <- indata[names(sel_gene),]
-# indata <- sweep(indata,2,apply(indata,2,median))
-# indata <- sweep(indata,1,apply(indata,1,median))
 batchPCA(indata = indata,
          batch = annCol.wt.gaby$Subtype,
          fig.dir = fig.path,
@@ -405,7 +418,6 @@ batchPCA(indata = indata,
          showID = F,
          cex = 0.9,
          showLegend = T)
-# corrplot::corrplot(cor(indata))
 
 # use consensus hierachical clustering
 N.cluster <- 2
@@ -437,8 +449,6 @@ pheatmap(as.matrix(cluster2.wt.gaby.ans$sum),
          border_color = NA,
          annotation_col = cluster2.wt.gaby.ans$annCol,
          annotation_colors = cluster2.wt.gaby.ans$annColors,
-         # color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         # color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
          color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
          treeheight_row = 15,
          treeheight_col = 15,
@@ -455,9 +465,6 @@ pheatmap(as.matrix(plotdata),
          border_color = NA,
          annotation_col = cluster2.wt.gaby.ans$annCol,
          annotation_colors = cluster2.wt.gaby.ans$annColors,
-         # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
          color = greenred(64),
          treeheight_row = 15,
          treeheight_col = 15,
@@ -595,8 +602,6 @@ for (sam in colnames(imm.score.gaby.wt4)) {
 # add immunity to annotation  
 annCol.wt.gaby <- cbind.data.frame(annCol.wt.gaby[,1,drop = F],MCPscore[rownames(annCol.wt.gaby),])
 annCol.wt.gaby <- cbind.data.frame(annCol.wt.gaby,est[rownames(annCol.wt.gaby),1:2])
-# annCol.wt.gaby <- cbind.data.frame(annCol.wt.gaby[,1,drop = F],MCPscore.pure[rownames(annCol.wt.gaby),])
-# annCol.wt.gaby <- cbind.data.frame(annCol.wt.gaby,est[rownames(annCol.wt.gaby),1:2])
 
 annColors.wt.gaby[["T cells"]] <- annColors.wt.gaby[["CD8 T cells"]] <- greenred(64)
 annColors.wt.gaby[["Cytotoxic lymphocytes"]] <- annColors.wt.gaby[["NK cells"]] <-annColors.wt.gaby[["B lineage"]] <- greenred(64)
@@ -675,76 +680,6 @@ pheatmap(as.matrix(plotdata),
          fontsize_col = 8)
 invisible(dev.off())
 
-# lncRNA
-indata <- log2(TPM[Lids,wt.gaby.sam] + 1)
-indata <- indata[rowSums(indata) > 0,]
-var <- apply(indata, 1, mad)
-# sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-sel_gene <- var[var > quantile(var,probs = seq(0,1,0.25))[4]]
-indata <- indata[names(sel_gene),]
-
-N.cluster <- 2
-N.bootstrap <- 500
-N.gene.per.bootstrap <- round(0.9*nrow(indata))
-N.sample.per.bootstrap <- round(1*ncol(indata))
-map.res.path <- file.path(tumor.path, paste("commonCluster_lncRNA_log2TPM_mad10_ClusterNum",N.cluster,sep = ""))
-featType <- "wt.gaby.lncRNA"
-
-cluster2.wt.gaby.lncRNA.ans <- plot.common.cluster(indata, 
-                                                   tumorname=tumorname, 
-                                                   N.cluster=N.cluster, 
-                                                   N.bootstrap=N.bootstrap, 
-                                                   N.gene.per.bootstrap=N.gene.per.bootstrap, 
-                                                   N.sample.per.bootstrap=N.sample.per.bootstrap, 
-                                                   map.res.path=map.res.path, fig.path=fig.path, 
-                                                   featType=featType,
-                                                   annCol=annCol.wt.gaby, annColors=annColors.wt.gaby, 
-                                                   seed=2020415, 
-                                                   dist0="euclidean", link0 = "ward.D",
-                                                   dist="euclidean", link = "ward.D",
-                                                   clstCol=c(jco[2],jco[1]), 
-                                                   height = 7, dendsort = T)
-
-pdf(file.path(fig.path, "consensus heatmap of wilms tumor in gaby cohort using lncRNA.pdf"), height=8,width = 10)
-pheatmap(as.matrix(cluster2.wt.gaby.lncRNA.ans$sum),
-         cluster_rows = as.hclust(cluster2.wt.gaby.lncRNA.ans$dendro),
-         cluster_cols = as.hclust(cluster2.wt.gaby.lncRNA.ans$dendro),
-         border_color = NA,
-         annotation_col = cluster2.wt.gaby.lncRNA.ans$annCol,
-         annotation_colors = cluster2.wt.gaby.lncRNA.ans$annColors,
-         # color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         # color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 18,
-         cellheight = 15,
-         show_colnames = T,
-         show_rownames = F)
-invisible(dev.off())
-
-hcg <- hclust(distanceMatrix(as.matrix(t(indata)), "pearson"), "ward.D2")
-pdf(file.path(fig.path, "expression heatmap of wilms tumors in gaby cohort using lncRNA.pdf"), height=8,width = 10)
-plotdata <- standarize.fun(indata,halfwidth = 2)
-pheatmap(as.matrix(plotdata),
-         cluster_rows = dendsort(hcg),
-         cluster_cols = as.hclust(cluster2.wt.gaby.lncRNA.ans$dendro),
-         border_color = NA,
-         annotation_col = cluster2.wt.gaby.lncRNA.ans$annCol,
-         annotation_colors = cluster2.wt.gaby.lncRNA.ans$annColors,
-         # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         color = greenred(64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 18,
-         cellheight = 0.1,
-         show_colnames = T,
-         show_rownames = F,
-         fontsize_col = 8)
-invisible(dev.off())
-
 # 6. heatmap showing cibersort, immune signatures using mRNA dendrogram
 plotdata <- t(ciber.abs.res[rownames(cluster2.wt.gaby.mRNA.ans$annCol),])
 hcg <- hclust(distanceMatrix(as.matrix(t(plotdata)), "pearson"), "ward.D2")
@@ -756,9 +691,6 @@ pheatmap(as.matrix(plotdata),
          annotation_col = cluster2.wt.gaby.mRNA.ans$annCol,
          annotation_colors = cluster2.wt.gaby.mRNA.ans$annColors,
          color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         # color = greenred(64),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 18,
@@ -778,9 +710,6 @@ pheatmap(as.matrix(plotdata),
          annotation_col = cluster2.wt.gaby.mRNA.ans$annCol,
          annotation_colors = cluster2.wt.gaby.mRNA.ans$annColors,
          color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         # color = greenred(64),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 18,
@@ -800,9 +729,6 @@ pheatmap(as.matrix(plotdata),
          annotation_col = cluster2.wt.gaby.mRNA.ans$annCol,
          annotation_colors = cluster2.wt.gaby.mRNA.ans$annColors,
          color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         # color = greenred(64),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 18,
@@ -1485,8 +1411,6 @@ invisible(dev.off())
 
 tmp1 <- as.numeric(indata["TMEM173",RNA_Clust1.target])
 tmp2 <- as.numeric(indata["TMEM173",RNA_Clust2.target])
-#tmp3 <- as.numeric(indata["TMEM173",RNA_Clust3.target])
-#kruskal.test(list(tmp1,tmp2,tmp3))
 wilcox.test(tmp1,tmp2)
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("C1","C2"),c(length(RNA_Clust1.target),length(RNA_Clust2.target))))
@@ -1509,7 +1433,7 @@ tmp <- data.frame(exp = as.numeric(indata["TMEM173",]/as.numeric(est.target.back
                   OS = ifelse(Sinfo.target[colnames(indata),"Vital Status"] == "Dead" , 1, 0),
                   stringsAsFactors = F)
 coxph(Surv(OS.time,OS)~exp,data = tmp)
-fit <- coxph(Surv(OS.time, OS)~rcspline.eval(tmp$exp,nk=4,inclx = T),data=tmp, x=TRUE) 
+fit <- coxph(Surv(OS.time, OS)~rcspline.eval(tmp$exp,nk=4,inclx = T),data=tmp, x=TRUE)
 hr1 <- smoothHR(data=tmp, coxfit=fit) 
 print(hr1)
 
@@ -1701,22 +1625,6 @@ p$plot <- p$plot +
 pdf(file.path(fig.path,"KM for group of CCR immune signature by ccr39 data in TARGET cohort.pdf"),width = 5,height = 6)
 p
 invisible(dev.off())
-
-# tp53_altered_ccr39 <- rownames(annCol.ccr39[which(annCol.ccr39$TP53_ALTER == "Yes"),])
-# tp53_wild_ccr39 <- rownames(annCol.ccr39[which(annCol.ccr39$TP53_ALTER == "No"),])
-# pdf(file.path(fig.path,"CCR immune signature heatmap of ccr39 data regarding TP53 status.pdf"),width = 6,height = 3)
-# plotdata <- standarize.fun(imm.score.ccr39.wt,halfwidth = 1)
-# # plotdata <- annTrackScale(imm.score.ccr39.wt,halfwidth = 2,poolsd = F)
-# pheatmap(plotdata[,c(tp53_wild_ccr39,tp53_altered_ccr39)],
-#          border_color = NA,
-#          cluster_rows = F,
-#          cluster_cols = F,
-#          annotation_col = annCol.ccr39[c(tp53_wild_ccr39,tp53_altered_ccr39),],
-#          annotation_colors = annColors.ccr39,
-#          show_rownames = T,
-#          show_colnames = F,
-#          color = greenred(64))
-# invisible(dev.off())
 
 #-------------------------------------------------------------------------------------------------------------------------#
 # Reanalysis in TARGET data (cbioportal) by using 101 samples with frequent mutations alteration and clinical information #
@@ -2563,10 +2471,6 @@ annColors.target114[["tune_Clust"]] <- c("C1" = jco[2],"C2" = jco[1])
 annColors.target114[["OS"]] <- c("Alive" = "grey90","Dead" = brown)
 annColors.target114[["Gender"]] <- c("Female" = jco[2], "Male" = jco[1])
 
-# for (i in names(annColors.target114)[c(7:19,23,34:49)]) {
-#   annColors.target114[[i]] <- c("Yes" = "black","No" = "grey70","Missing" = "grey90")
-# }
-
 # tuning all target data 114
 com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
 indata <- target.pure$es.pure[,com_sam]
@@ -2750,17 +2654,6 @@ gsea_target_c2vsc1_all <- GSEA(geneList = geneList,
 res <- data.frame(gsea_target_c2vsc1_all)
 write.table(as.data.frame(gsea_target_c2vsc1_all),file.path(res.path,"GSEA all results for TARGET WT mRNA TP53 Mutated C2 vs Wild C1 DEGs.txt"),row.names = T,col.names = NA,sep = "\t",quote = F)
 
-# C3 vs Others
-# tmp <- annCol.target114$tune_Clust; names(tmp) <- rownames(annCol.target114)
-# tmp <- na.omit(tmp)
-# tmp <- ifelse(tmp == "C3","C3","Others")
-# Groupinfo <- annCol.target114[names(tmp),]
-# colnames(Groupinfo)[45] <- "group"
-# Groupinfo$group <- ifelse(Groupinfo$group == "C3","C3","Others")
-# PASSFlag <- rep(TRUE,length(Mids)); names(PASSFlag) <- Mids
-# complist <- createList.RNAclust.targetC3(group=tmp)
-# twoclassedgeR(res.path, Ginfo, countsTable=countsTable[Mids, names(tmp)], tailrows, Groupinfo=Groupinfo, features=Mids, featType="TARGET_WT_mRNA", complist,PASSFlag=PASSFlag, overwt=TRUE)
-
 # survival analysis
 tmp <- data.frame(OS.time = annCol.target114$OS.time/365,
                   OS = ifelse(annCol.target114$OS == "Dead",1,0),
@@ -2842,11 +2735,9 @@ wilcox.test(tmp1,tmp2)
 # comparsion of CD4 memory activated
 tmp1 <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C1"),])
 tmp2 <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C2"),])
-# tmp3 <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C3"),])
 
 tmp1 <- indata["T.cells.CD4.memory.activated",tmp1]
 tmp2 <- indata["T.cells.CD4.memory.activated",tmp2]
-# tmp3 <- indata["T.cells.CD4.memory.activated",tmp3]
 
 t.test(tmp1,tmp2,alternative = "less")
 tmp <- data.frame(exp = c(tmp1,tmp2),
@@ -2871,21 +2762,16 @@ indata <- target.pure$es.pure[,com_sam]
 
 RNA_Clust1.target <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C1"),])
 RNA_Clust2.target <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C2"),])
-# RNA_Clust3.target <- rownames(annCol.target114[which(annCol.target114$tune_Clust == "C3"),])
 
 for (cell in rownames(indata)) {
   tmp1 <- as.numeric(indata[cell,RNA_Clust1.target])
   tmp2 <- as.numeric(indata[cell,RNA_Clust2.target])
-  #tmp3 <- as.numeric(indata[cell,RNA_Clust3.target])
-  
-  #kp <- kruskal.test(list(tmp1,tmp2,tmp3))$p.value
+
   wp <- wilcox.test(tmp1,tmp2)$p.value
   outTab <- rbind.data.frame(outTab,
                              data.frame(cell = cell,
                                         avg.clust1 = mean(tmp1),
                                         avg.clust2 = mean(tmp2),
-                                        #avg.clust3 = mean(tmp3),
-                                        #kruskal.p = round(kp,4),
                                         wilcox.p = round(wp,4),
                                         stringsAsFactors = F),
                              stringsAsFactors = F)
@@ -2900,9 +2786,8 @@ dd$sample <- rownames(dd)
 d2 <- gather(dd, cell, expr, 1:24)
 
 pvalues <- sapply(d2$cell, function(x) {
-  #res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
   res <- wilcox.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
+  return(res$p.value)
 })
 pv <- data.frame(gene = d2$cell, pvalue = pvalues)
 pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
@@ -2922,557 +2807,6 @@ stabl <- CreateTableOne(vars=colnames(tmp),strata="tune_Clust",
                         data=tmp,factorVars=colnames(tmp)[c(1:4,6:21,24:37,39,41:44)])
 print(stabl,showAllLevels = TRUE)
 write.table(print(stabl,showAllLevels = TRUE),file.path(res.path,"statistic between CCR immune signatures 2 groups of 114 target wilms tumors.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-# HIF1A loss
-target.cna <- read.table(file.path(data.path,"wt_target_2018_pub/data_CNA.txt"),sep = "\t",header = T,check.names = F,stringsAsFactors = F,row.names = 1)
-target.cna <- target.cna[,-1]
-colnames(target.cna) <- paste0(colnames(target.cna),"A")
-
-matchID <- read.table("H:/Jan2020/Wilms/wetransfer-93a608/TARGET_ID_MATCH_FILE.txt",sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = 1)
-com_sam <- intersect(colnames(target.cna),rownames(matchID))
-target.cna <- target.cna[,com_sam]
-colnames(target.cna) <- matchID[com_sam,"SRA_RUN"]
-
-com_sam <- intersect(rownames(annCol.target114),colnames(target.cna))
-annCol.target114$HIF1A_CNA <- "Missing"
-annCol.target114[com_sam,"HIF1A_CNA"] <- as.numeric(target.cna["HIF1A",com_sam])
-table(annCol.target114$HIF1A_CNA,annCol.target114$tune_Clust)
-fisher.test(matrix(c(15,12,52,25),byrow = T,ncol = 2))
-
-tmp1 <- as.numeric(TPM.TARGET.HUGO["HIF1A",RNA_Clust1.target])
-tmp2 <- as.numeric(TPM.TARGET.HUGO["HIF1A",RNA_Clust2.target])
-#tmp3 <- as.numeric(TPM.TARGET.HUGO["HIF1A",RNA_Clust3.target])
-boxplot(tmp1,tmp2)
-
-# oncogenetic pathway and angiogenesis
-gaby.wt <- read.table(file.path(res.path,"Wilms_tumor_Gaby_log2TPM_hugo.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F) 
-target.wt <- read.table(file.path(res.path,"Wilms_tumor_TARGET_log2TPM_hugo.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = 1) 
-
-onco.signature <- read.table(file.path(comAnn.path,"Oncogenetic_signature.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-cell.type <- unique(onco.signature$Pathway)
-onco.sig.ccr <- list()
-for (i in cell.type) {
-  onco.sig.ccr[[i]] <- intersect(toupper(onco.signature[which(onco.signature$Pathway == i),"Symbol"]),rownames(gaby.wt))
-}
-onco.score.gaby.wt <- gsva(as.matrix(gaby.wt),onco.sig.ccr,method="gsva",parallel.sz = 1)
-onco.score.gaby.wt.pure <- onco.score.gaby.wt
-for (sam in colnames(onco.score.gaby.wt)) {
-  for (cell in rownames(onco.score.gaby.wt)) {
-    onco.score.gaby.wt.pure[cell,sam] <- onco.score.gaby.wt[cell,sam]/est.backup[4,sam]
-  }
-}
-
-onco.sig.ccr <- list()
-for (i in cell.type) {
-  onco.sig.ccr[[i]] <- intersect(toupper(onco.signature[which(onco.signature$Pathway == i),"Symbol"]),rownames(target.wt))
-}
-onco.score.target.wt <- gsva(as.matrix(target.wt),onco.sig.ccr,method="gsva",parallel.sz = 1)
-onco.score.target.wt.pure <- onco.score.target.wt
-for (sam in colnames(onco.score.target.wt)) {
-  for (cell in rownames(onco.score.target.wt)) {
-    onco.score.target.wt.pure[cell,sam] <- onco.score.target.wt[cell,sam]/est.target.backup[4,sam]
-  }
-}
-
-dd <- as.data.frame(t(onco.score.gaby.wt))
-dd$RNA_Clust <- annCol.wt.gaby[rownames(dd),"RNA_Clust"]
-dd$sample <- rownames(dd)
-d2 <- gather(dd, cell, expr, 1:11)
-d2$cell <- factor(d2$cell,levels = rownames(onco.score.gaby.wt))
-d2$RNA_Clust <- factor(d2$RNA_Clust,levels = c("TP53_Wild","TP53_Mutated"))
-
-pvalues <- sapply(d2$cell, function(x) {
-  res <- wilcox.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-})
-pv <- data.frame(gene = d2$cell, pvalue = pvalues)
-pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                  labels=c('***', '**', '*', '.', ' '))
-
-ggplot(d2, aes(cell, expr, fill=RNA_Clust)) + scale_fill_manual(values = c(jco[2],jco[1])) +
-  geom_boxplot() + 
-  theme_bw() +
-  theme(panel.background = element_blank(),
-        panel.grid = element_blank(),
-        legend.position = "top") + 
-  geom_text(aes(gene, y=max(d2$expr) * 1.1, 
-                label=pv$sigcode),
-            data=pv, inherit.aes=F) + 
-  xlab(NULL)+ylab("Enrichment score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(file.path(fig.path,"boxplot for oncogenetic pathways in two clusters in Gaby wt cohort.pdf"),width = 8,height = 5)
-
-plotdata <- standarize.fun(onco.score.gaby.wt,halfwidth = 1)
-pdf(file.path(fig.path,"Oncogenetic and angiogeneisis pathways heatmap for gaby wt cohort.pdf"),width = 5,height = 4)
-pheatmap(as.matrix(plotdata),
-         cluster_rows = F,
-         cluster_cols = as.hclust(cluster2.wt.gaby.mRNA.ans$dendro),
-         border_color = NA,
-         annotation_col = annCol.wt.gaby[,14,drop = F],
-         annotation_colors = annColors.wt.gaby,
-         color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 15,
-         cellheight = 15,
-         gaps_row = 10,
-         cutree_cols = 2,
-         show_colnames = F,
-         show_rownames = T,
-         fontsize_col = 8)
-invisible(dev.off())
-
-dd <- as.data.frame(t(onco.score.target.wt[,target.pure$keep.sam]))
-dd$RNA_Clust <- annCol.target114[rownames(dd),"tune_Clust"]
-dd$sample <- rownames(dd)
-d2 <- gather(dd, cell, expr, 1:11)
-d2$cell <- factor(d2$cell,levels = rownames(onco.score.target.wt))
-
-pvalues <- sapply(d2$cell, function(x) {
-  #res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  res <- wilcox.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-})
-pv <- data.frame(gene = d2$cell, pvalue = pvalues)
-pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                  labels=c('***', '**', '*', '.', ' '))
-
-ggplot(d2, aes(cell, expr, fill=RNA_Clust)) + scale_fill_manual(values = c(jco[2],jco[1])) +
-  geom_boxplot() + 
-  theme_bw() +
-  theme(panel.background = element_blank(),
-        panel.grid = element_blank(),
-        legend.position = "top") + 
-  geom_text(aes(gene, y=max(d2$expr) * 1.1, 
-                label=pv$sigcode),
-            data=pv, inherit.aes=F) + 
-  xlab(NULL)+ylab("Enrichment score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(file.path(fig.path,"boxplot for oncogenetic pathways among 2 clusters in 114 target cohort.pdf"),width = 8,height = 5)
-
-plotdata <- standarize.fun(onco.score.gaby.wt,halfwidth = 1)
-pdf(file.path(fig.path,"Oncogenetic and angiogeneisis pathways heatmap for gaby wt cohort.pdf"),width = 5,height = 4)
-pheatmap(as.matrix(plotdata),
-         cluster_rows = F,
-         cluster_cols = as.hclust(cluster2.wt.gaby.mRNA.ans$dendro),
-         border_color = NA,
-         annotation_col = annCol.wt.gaby[,14,drop = F],
-         annotation_colors = annColors.wt.gaby,
-         color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 15,
-         cellheight = 15,
-         gaps_row = 10,
-         cutree_cols = 2,
-         show_colnames = F,
-         show_rownames = T,
-         fontsize_col = 8)
-invisible(dev.off())
-
-plotdata <- standarize.fun(onco.score.target.wt[,target.pure$keep.sam],halfwidth = 1)
-pdf(file.path(fig.path,"Oncogenetic and angiogeneisis pathways heatmap for target wt cohort.pdf"),width = 7,height = 4)
-pheatmap(as.matrix(plotdata),
-         cluster_rows = F,
-         cluster_cols = hcs.target114,
-         border_color = NA,
-         annotation_col = annCol.target114[colnames(plotdata),45,drop = F],
-         annotation_colors = annColors.target114,
-         color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 3,
-         cellheight = 10,
-         gaps_row = 10,
-         cutree_cols = 2,
-         show_colnames = F,
-         show_rownames = T,
-         fontsize_col = 8)
-invisible(dev.off())
-
-# heatmap of TGFB and TP53 pathway genes in Gaby and Target cohorts
-tgfb <- onco.signature[which(onco.signature$Pathway == "TGF-Beta"),"Symbol"]
-tp53 <- onco.signature[which(onco.signature$Pathway == "TP53"),"Symbol"]
-
-indata <- gaby.wt[c(tgfb,tp53),]
-indata <- standarize.fun(indata = indata,halfwidth = 2)
-pdf(file.path(fig.path,"heatmap pf TGFB and TP53 pathways in Gaby WT cohort.pdf"),width = 5,height = 5)
-pheatmap(indata,
-         cluster_rows = F,
-         cluster_cols = as.hclust(cluster2.wt.gaby.mRNA.ans$dendro),
-         border_color = NA,
-         annotation_col = annCol.wt.gaby[,14,drop = F],
-         annotation_colors = annColors.wt.gaby,
-         color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 15,
-         cellheight = 15,
-         gaps_row = 7,
-         cutree_cols = 2,
-         show_colnames = F,
-         show_rownames = T,
-         fontsize_col = 8)
-invisible(dev.off())
-
-indata <- target.wt[c(tgfb,tp53),target.pure$keep.sam]
-indata <- standarize.fun(indata = indata,halfwidth = 2)
-pdf(file.path(fig.path,"heatmap pf TGFB and TP53 pathways in Target 114 WT cohort.pdf"),width = 7,height = 4)
-pheatmap(indata,
-         cluster_rows = F,
-         cluster_cols = hcs.target114,
-         border_color = NA,
-         annotation_col = annCol.target114[colnames(indata),45,drop = F],
-         annotation_colors = annColors.target114,
-         color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 3,
-         cellheight = 10,
-         gaps_row = 7,
-         cutree_cols = 2,
-         show_colnames = F,
-         show_rownames = T,
-         fontsize_col = 8)
-invisible(dev.off())
-
-# Th1, Th2, Th17 and MDSC
-otherimm.signature <- read.table(file.path(comAnn.path,"Other_immune_signature.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-cell.type <- unique(otherimm.signature$Cell)
-otherimm.sig.ccr <- list()
-for (i in cell.type) {
-  otherimm.sig.ccr[[i]] <- intersect(toupper(otherimm.signature[which(otherimm.signature$Cell == i),"Symbol"]),rownames(gaby.wt))
-}
-otherimm.score.gaby.wt <- gsva(as.matrix(gaby.wt),otherimm.sig.ccr,method="gsva",parallel.sz = 1)
-otherimm.score.gaby.wt.pure <- otherimm.score.gaby.wt
-for (sam in colnames(otherimm.score.gaby.wt)) {
-  for (cell in rownames(otherimm.score.gaby.wt)) {
-    otherimm.score.gaby.wt.pure[cell,sam] <- otherimm.score.gaby.wt[cell,sam]/(1-est.backup[4,sam])
-  }
-}
-
-dd <- as.data.frame(t(otherimm.score.gaby.wt.pure))
-dd$RNA_Clust <- annCol.wt.gaby[rownames(dd),"RNA_Clust"]
-dd$sample <- rownames(dd)
-d2 <- gather(dd, cell, expr, 1:4)
-d2$RNA_Clust <- factor(d2$RNA_Clust,levels = c("TP53_Wild","TP53_Mutated"))
-d2$cell <- factor(d2$cell,levels = c("Th1","Th2","Th17","MDSC"))
-
-pvalues <- sapply(d2$cell, function(x) {
-  res <- wilcox.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-})
-pv <- data.frame(gene = d2$cell, pvalue = pvalues)
-pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                  labels=c('***', '**', '*', '.', ' '))
-
-ggplot(d2, aes(cell, expr, fill=RNA_Clust)) + scale_fill_manual(values = c(jco[2],jco[1])) +
-  geom_boxplot() + 
-  geom_text(aes(gene, y=max(d2$expr) * 1.1, 
-                label=pv$sigcode),
-            data=pv, inherit.aes=F) + 
-  xlab(NULL)+ylab("Enrichment score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(file.path(fig.path,"boxplot for all other immune signatures in two clusters in gaby cohort (purified by tp).pdf"),width = 5,height = 3)
-
-onco.sig.ccr <- list()
-for (i in cell.type) {
-  otherimm.sig.ccr[[i]] <- intersect(toupper(otherimm.signature[which(otherimm.signature$Cell == i),"Symbol"]),rownames(target.wt))
-}
-otherimm.score.target.wt <- gsva(as.matrix(target.wt),otherimm.sig.ccr,method="gsva",parallel.sz = 1)
-otherimm.score.target.wt.pure <- otherimm.score.target.wt
-for (sam in colnames(otherimm.score.target.wt)) {
-  for (cell in rownames(otherimm.score.target.wt)) {
-    otherimm.score.target.wt.pure[cell,sam] <- otherimm.score.target.wt[cell,sam]/(1-est.target.backup[4,sam])
-  }
-}
-
-dd <- as.data.frame(t(otherimm.score.target.wt.pure[,target.pure$keep.sam]))
-dd$RNA_Clust <- annCol.target114[rownames(dd),"tune_Clust"]
-dd$sample <- rownames(dd)
-d2 <- gather(dd, cell, expr, 1:4)
-d2$cell <- factor(d2$cell,levels = c("Th1","Th2","Th17","MDSC"))
-
-pvalues <- sapply(d2$cell, function(x) {
-  #res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  res <- wilcox.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-})
-pv <- data.frame(gene = d2$cell, pvalue = pvalues)
-pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-                  labels=c('***', '**', '*', '.', ' '))
-
-ggplot(d2, aes(cell, expr, fill=RNA_Clust)) + scale_fill_manual(values = c(jco[2],jco[1])) +
-  geom_boxplot() + 
-  geom_text(aes(gene, y=max(d2$expr) * 1.1, 
-                label=pv$sigcode),
-            data=pv, inherit.aes=F) + 
-  xlab(NULL)+ylab("Enrichment score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-ggsave(file.path(fig.path,"boxplot for all other immune signatures among 2 clusters in 114 target cohort (purified by tp).pdf"),width = 5,height = 3)
-
-# multi comparsion for TGFB, TP53, angiogenesis, and other imm signatures in target cohort
-# TGFB multiple comparsion
-# tmp <- onco.score.target.wt[c("TGF-Beta","TP53"),target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[1,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[1,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[1,RNA_Clust3.target])
-# tmp <- data.frame(TGFB = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust, 
-#                       y = TGFB, 
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) + 
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(), 
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("TGF-Beta enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$TGFB))
-# ggsave(file.path(fig.path,"multiple comparision of TGFB pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # TP53 multiple comparision
-# tmp <- onco.score.target.wt[c("TGF-Beta","TP53","Angiogenesis"),target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[2,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[2,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[2,RNA_Clust3.target])
-# tmp <- data.frame(TP53 = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust, 
-#                       y = TP53, 
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) +
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(),
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("TP53 enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$TP53))
-# ggsave(file.path(fig.path,"multiple comparision of TP53 pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # Angiogenesis multiple comparision
-# tmp <- onco.score.target.wt[c("TGF-Beta","TP53","Angiogenesis"),target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[3,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[3,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[3,RNA_Clust3.target])
-# tmp <- data.frame(Angiogenesis = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust, 
-#                       y = Angiogenesis,
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) + 
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(), 
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("Angiogenesis enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$Angiogenesis))
-# ggsave(file.path(fig.path,"multiple comparision of Angiogenesis pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # Th1 multiple comparision
-# tmp <- otherimm.score.target.wt.pure[,target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[1,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[1,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[1,RNA_Clust3.target])
-# tmp <- data.frame(Th1 = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust,
-#                       y = Th1, 
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) + 
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(),
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("Th1 enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$Th1))
-# ggsave(file.path(fig.path,"multiple comparision of Th1 pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # Th17 multiple comparision
-# tmp <- otherimm.score.target.wt.pure[,target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[2,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[2,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[2,RNA_Clust3.target])
-# tmp <- data.frame(Th17 = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust, 
-#                       y = Th17, 
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) + 
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(),
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("Th17 enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$Th17))
-# ggsave(file.path(fig.path,"multiple comparision of Th17 pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # Th2 multiple comparision
-# tmp <- otherimm.score.target.wt.pure[,target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[3,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[3,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[3,RNA_Clust3.target])
-# tmp <- data.frame(Th2 = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust,
-#                       y = Th2, 
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) +
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(), 
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("Th2 enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$Th2))
-# ggsave(file.path(fig.path,"multiple comparision of Th2 pathway in TARGET WT 114.pdf"),width = 5,height = 5)
-# 
-# # MDSC multiple comparision
-# tmp <- otherimm.score.target.wt.pure[,target.pure$keep.sam]
-# tmp1 <- as.numeric(tmp[4,RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp[4,RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp[4,RNA_Clust3.target])
-# tmp <- data.frame(MDSC = c(tmp1,tmp2,tmp3),
-#                   RNA_Clust = rep(c("C1","C2","C3"),c(69,12,15)),
-#                   stringsAsFactors = F)
-# my_comparisons <- list( c("C1", "C2"), 
-#                         c("C2", "C3"), 
-#                         c("C1", "C3"))
-# 
-# ggplot(data = tmp,aes(x = RNA_Clust, 
-#                       y = MDSC,
-#                       fill = RNA_Clust))+ 
-#   scale_fill_manual(values = c(jco[2],jco[1],seagreen)) + 
-#   geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-#               size = 0.8, color="black") +
-#   geom_boxplot(notch = F, outlier.size = -1, 
-#                color="black", lwd=0.8, alpha = 0.7) +
-#   geom_point(shape = 21, size=2, 
-#              position = position_jitterdodge(), 
-#              color="black", alpha = 1) +
-#   theme_classic() + 
-#   ylab("MDSC enrichment score") +
-#   xlab("Immunologic cluster") +
-#   theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-#         #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-#         axis.ticks = element_line(size=0.2, color="black"),
-#         axis.ticks.length = unit(0.2, "cm"),
-#         legend.position = "none",
-#         axis.title = element_text(size = 15),
-#         axis.text = element_text(size = 10)) +
-#   
-#   stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-#   stat_compare_means(method = "kruskal.test", label.y = min(tmp$MDSC))
-# ggsave(file.path(fig.path,"multiple comparision of MDSC pathway in TARGET WT 114.pdf"),width = 5,height = 5)
 
 # Gene ontology for Gaby wt cohort mRNA
 fdr.cutoff <- 0.05
@@ -3505,256 +2839,6 @@ ego_dn <-     enrichGO(gene          = as.character(tmp$ENSEMBL),
                        minGSSize     = 10,
                        readable      = T)
 write.table(data.frame(summary(ego_dn)),file.path(res.path,"Gaby WT TP53_wild group upregualted genes GO BP.txt"),sep = "\t",row.names = F,quote = F)
-
-# microenviroment factors expression in TAEGET data
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(target.wt))
-com_gene <- setdiff(com_gene,"HLA-DQB2")
-micro.gene <- micro.gene[com_gene,]
-
-micro.exp <- target.wt[com_gene,c(RNA_Clust1.target,RNA_Clust2.target,RNA_Clust3.target)]; micro.exp.target <- micro.exp
-micro.exp1 <- micro.exp[,RNA_Clust1.target]
-micro.exp2 <- micro.exp[,RNA_Clust2.target]
-#micro.exp3 <- micro.exp[,RNA_Clust3.target]
-
-micro.exp1.avg <- rowMeans(micro.exp1)
-micro.exp2.avg <- rowMeans(micro.exp2)
-#micro.exp3.avg <- rowMeans(micro.exp3)
-
-micro.mat <- data.frame(RNA_Clust1 = as.numeric(micro.exp1.avg),
-                        RNA_Clust2 = as.numeric(micro.exp2.avg),
-                        #RNA_Clust3 = as.numeric(micro.exp3.avg),
-                        stringsAsFactors = F,
-                        row.names = rownames(micro.exp))
-
-subt <- data.frame(Subtype = rep(c("C1","C2"),c(69,27)),
-                   row.names = c(RNA_Clust1.target,RNA_Clust2.target),
-                   stringsAsFactors = F)
-
-comprTab.target <- cross_subtype_compr(expr = micro.exp, 
-                                       subt = subt,
-                                       two_sam_compr_method = "wilcox", 
-                                       res.path = res.path)
-
-annRow <- micro.gene[,1,drop = F]
-annColors.micro <- list()
-annColors.micro[["Pathway"]] <- c("Chemokiness and receptor" = red,
-                                  "Co-inhibitors" = blue,
-                                  "Co-stimulators" = green,
-                                  "Interferons and receptors" = yellow,
-                                  "Interleukins and receptors" = seagreen,
-                                  "MHCI" = brown,
-                                  "MHCII" = cherry,
-                                  "Other cytokines" = lightred,
-                                  "OTHER MHC" = purple)
-
-# plotdata <- standarize.fun(micro.mat,halfwidth = 1)
-plotdata <- t(scale(t(micro.mat)))
-
-blank <- "    "
-p.value <- comprTab.target$nominal.p.value
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-
-pdf(file.path(fig.path,"averaged expression of microenviroment factors in TARGET 2 clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata,
-         cluster_rows = F,
-         cluster_cols = F,
-         color = greenred(64),
-         annotation_row = annRow,
-         annotation_colors = annColors.micro,
-         labels_row = paste(add.label, p.label, sep=blank),
-         fontfamily = "mono",
-         gaps_row = c(48,92,100,124,128,135,138,153))
-invisible(dev.off())
-
-# cna in TARGET cohort
-RNA_Clust1.target.cna <- intersect(colnames(target.cna),RNA_Clust1.target)
-RNA_Clust2.target.cna <- intersect(colnames(target.cna),RNA_Clust2.target)
-#RNA_Clust3.target.cna <- intersect(colnames(target.cna),RNA_Clust3.target)
-
-com_cna <- intersect(com_gene,rownames(target.cna))
-micro.cna <- target.cna[com_cna,c(RNA_Clust1.target.cna,
-                                  RNA_Clust2.target.cna)]
-                                  #RNA_Clust3.target.cna)]
-
-annRow.cna <- annRow[com_cna,,drop = F]
-micro.cna1 <- micro.cna[,RNA_Clust1.target.cna]
-micro.cna2 <- micro.cna[,RNA_Clust2.target.cna]
-#micro.cna3 <- micro.cna[,RNA_Clust3.target.cna]
-
-micro.cna1.avg <- rowMeans(micro.cna1)
-micro.cna2.avg <- rowMeans(micro.cna2)
-#micro.cna3.avg <- rowMeans(micro.cna3)
-
-micro.mat <- data.frame(RNA_Clust1 = as.numeric(micro.cna1.avg),
-                        RNA_Clust2 = as.numeric(micro.cna2.avg),
-                        #RNA_Clust3 = as.numeric(micro.cna3.avg),
-                        stringsAsFactors = F,
-                        row.names = rownames(micro.cna))
-
-pdf(file.path(fig.path,"averaged cna of microenviroment factors in TARGET 2 clusters.pdf"),width = 8,height = 22)
-pheatmap(micro.mat,
-         cluster_rows = F,
-         cluster_cols = F,
-         color = greenred(64),
-         annotation_row = annRow.cna,
-         annotation_colors = annColors.micro,
-         gaps_row = c(47,86,94,118,122,129,132,147))
-invisible(dev.off())
-
-# microenviroment factors expression in Gaby data
-micro.gene <- read.table(file.path(data.path,"microenviroment factors.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = NULL)
-rownames(micro.gene) <- micro.gene$Symbol
-com_gene <- intersect(rownames(micro.gene),rownames(gaby.wt))
-micro.gene <- micro.gene[com_gene,]
-
-micro.exp <- gaby.wt[com_gene,c(RNA_Clust1,RNA_Clust2)]; micro.exp.gaby <- micro.exp
-micro.exp1 <- micro.exp[,RNA_Clust1]
-micro.exp2 <- micro.exp[,RNA_Clust2]
-
-micro.exp1.avg <- rowMeans(micro.exp1)
-micro.exp2.avg <- rowMeans(micro.exp2)
-
-micro.mat <- data.frame(RNA_Clust1 = as.numeric(micro.exp1.avg),
-                        RNA_Clust2 = as.numeric(micro.exp2.avg),
-                        stringsAsFactors = F,
-                        row.names = rownames(micro.exp))
-
-subt <- data.frame(Subtype = rep(c("C1","C2"),c(5,5)),
-                   row.names = c(RNA_Clust1,RNA_Clust2),
-                   stringsAsFactors = F)
-
-comprTab.gaby <- cross_subtype_compr(expr = micro.exp, 
-                                     subt = subt,
-                                     two_sam_compr_method = "wilcox", 
-                                     res.path = res.path)
-
-annRow <- micro.gene[,1,drop = F]
-annColors.micro <- list()
-annColors.micro[["Pathway"]] <- c("Chemokiness and receptor" = red,
-                                  "Co-inhibitors" = blue,
-                                  "Co-stimulators" = green,
-                                  "Interferons and receptors" = yellow,
-                                  "Interleukins and receptors" = seagreen,
-                                  "MHCI" = brown,
-                                  "MHCII" = cherry,
-                                  "Other cytokines" = lightred,
-                                  "OTHER MHC" = purple)
-
-plotdata <- t(scale(t(micro.mat)))
-
-blank <- "    " 
-p.value <- comprTab.gaby$nominal.p.value
-sig.label <- ifelse(p.value < 0.001,"****",
-                    ifelse(p.value < 0.005,"***",
-                           ifelse(p.value < 0.01,"**",
-                                  ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value,
-                   format = "e",
-                   digits = 2)
-library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
-                     max(nchar(paste0(rownames(plotdata),sig.label))), 
-                     side = "right")
-
-pdf(file.path(fig.path,"averaged expression of microenviroment factors in Gaby clusters.pdf"),width = 8,height = 22)
-pheatmap(plotdata,
-         cluster_rows = F,
-         cluster_cols = F,
-         color = greenred(64),
-         annotation_row = annRow,
-         annotation_colors = annColors.micro,
-         labels_row = paste(add.label, p.label, sep=blank),
-         fontfamily = "mono",
-         gaps_row = c(47,89,95,118,122,128,130,144))
-invisible(dev.off())
-
-# common significant microenviroment genes
-com_micro <- intersect(comprTab.target[which(comprTab.target$nominal.p.value < 0.05),"gene"],
-             comprTab.gaby[which(comprTab.gaby$nominal.p.value < 0.05),"gene"])
-
-for (gene in com_micro) {
-  
-  # gaby
-  tmp1 <- as.numeric(micro.exp.gaby[gene,RNA_Clust1])
-  tmp2 <- as.numeric(micro.exp.gaby[gene,RNA_Clust2])
-  tmp <- data.frame(Gene = c(tmp1,tmp2),
-                    RNA_Clust = rep(c("C1","C2"),c(5,5)),
-                    stringsAsFactors = F)
-  my_comparisons <- list("C1", "C2")  
-  ggplot(data = tmp,aes(x = RNA_Clust,
-                        y = Gene,
-                        fill = RNA_Clust))+ 
-    scale_fill_manual(values = c(jco[2],jco[1])) + 
-    geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-                size = 0.8, color="black") +
-    geom_boxplot(notch = F, outlier.size = -1, 
-                 color="black", lwd=0.8, alpha = 0.7) +
-    geom_point(shape = 21, size=2, 
-               position = position_jitterdodge(), 
-               color="black", alpha = 1) +
-    theme_classic() + 
-    ylab(paste0("log2(TPM + 1) of ",gene)) +
-    xlab("Immunologic cluster") +
-    theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-          #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-          axis.ticks = element_line(size=0.2, color="black"),
-          axis.ticks.length = unit(0.2, "cm"),
-          legend.position = "none",
-          axis.title = element_text(size = 15),
-          axis.text = element_text(size = 10)) +
-    stat_compare_means(method = "wilcox.test", label.x = 1.5)
-  ggsave(file.path(fig.path,paste0("two group comparision of ",gene," in Gaby WT 2 cluster.pdf")),width = 5,height = 5)
-  
-  # target
-  tmp1 <- as.numeric(micro.exp.target[gene,RNA_Clust1.target])
-  tmp2 <- as.numeric(micro.exp.target[gene,RNA_Clust2.target])
-  #tmp3 <- as.numeric(micro.exp.target[gene,RNA_Clust3.target])
-  tmp <- data.frame(Gene = c(tmp1,tmp2),
-                    RNA_Clust = rep(c("C1","C2")),c(69,27),
-                    stringsAsFactors = F)
-  # my_comparisons <- list( c("C1", "C2"), 
-  #                         c("C2", "C3"), 
-  #                         c("C1", "C3"))
-  
-  ggplot(data = tmp,aes(x = RNA_Clust, 
-                        y = Gene, 
-                        fill = RNA_Clust))+ 
-    scale_fill_manual(values = c(jco[2],jco[1])) + 
-    geom_violin(alpha = 0.4, position = position_dodge(width = .75), 
-                size = 0.8, color="black") +
-    geom_boxplot(notch = F, outlier.size = -1, 
-                 color="black", lwd=0.8, alpha = 0.7) +
-    geom_point(shape = 21, size=2,
-               position = position_jitterdodge(), 
-               color="black", alpha = 1) +
-    theme_classic() + 
-    ylab(paste0("log2(TPM + 1) of ",gene)) +
-    xlab("Immunologic cluster") +
-    theme(axis.text.x = element_text(angle = 0, hjust = 1, size = 12),
-          #panel.border = element_rect(colour = "black", fill=NA, size=0.2),
-          axis.ticks = element_line(size=0.2, color="black"),
-          axis.ticks.length = unit(0.2, "cm"),
-          legend.position = "none",
-          axis.title = element_text(size = 15),
-          axis.text = element_text(size = 10)) +
-    stat_compare_means(method = "wilcox.test", label.x = 1.5)
-    #stat_compare_means(comparisons = my_comparisons,method = "wilcox.test") + 
-    #stat_compare_means(method = "kruskal.test", label.y = min(tmp$Gene))
-  ggsave(file.path(fig.path,paste0("two group comparision of ",gene," in TARGET WT 114 2 cluster.pdf")),width = 5,height = 5)
-  
-}
 
 #----------------------------#
 # immunity in normal samples #
@@ -3789,7 +2873,7 @@ generateInputFileForSubMap <- function(in_gct, gct_file, cls_file, sam_info, typ
   cat(as.numeric(factor(sam_info[, type_name])), file = cls_file, append = T)
 }
 
-gaby.wt <- read.table(file.path(res.path,"Wilms_tumor_Gaby_log2TPM_hugo.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F) 
+gaby.wt <- read.table(file.path(res.path,"Wilms_tumor_Gaby_log2TPM_hugo.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F)
 var.gaby <- apply(gaby.wt, 1, mad)
 sel_gene.gaby <- names(var.gaby[var.gaby > quantile(var.gaby)[4]])
 gaby.wt.info <- annCol.wt.gaby
@@ -3802,7 +2886,7 @@ target.wt.info$rank <- ifelse(target.wt.info$tune_Clust == "C1",1,2)
 target.wt <- target.wt[,rownames(target.wt.info)]
 var.target <- apply(target.wt, 1, mad)
 sel_gene.target <- names(var.target[var.target > quantile(var.target)[4]])
-GENELIST <- intersect(rownames(gaby.wt),rownames(target.wt)) 
+GENELIST <- intersect(rownames(gaby.wt),rownames(target.wt))
 
 sam_info <- gaby.wt.info
 in_gct <- gaby.wt[GENELIST,rownames(gaby.wt.info)]
@@ -3817,17 +2901,6 @@ in_gct <- target.wt[GENELIST,rownames(target.wt.info)]
 gct_file <- file.path(res.path,"target.wt.for.SubMap.gct")
 cls_file <- file.path(res.path,"target.wt.for.SubMap.cls")
 generateInputFileForSubMap(in_gct = in_gct, gct_file = gct_file, cls_file = cls_file, sam_info = sam_info, type_name = "rank")
-
-# target.wt.info <- as.data.frame(annCol.target114[which(is.na(annCol.target114$tune_Clust3) == F),])
-# target.wt.info$rank <- ifelse(target.wt.info$tune_Clust3 == "C1",1,
-#                               ifelse(target.wt.info$tune_Clust3 == "C2",2,3))
-# 
-# sam_info <- target.wt.info
-# in_gct <- target.wt[GENELIST,rownames(target.wt.info)]
-# 
-# gct_file <- file.path(res.path,"target.wt.for.SubMap.mad.TME.gct")
-# cls_file <- file.path(res.path,"target.wt.for.SubMap.mad.TME.cls")
-# generateInputFileForSubMap(in_gct = in_gct, gct_file = gct_file, cls_file = cls_file, sam_info = sam_info, type_name = "rank")
 
 #-------------------#
 # Mutation analysis #
@@ -3889,15 +2962,6 @@ for (sample in rownames(sigs.input.sbs)) {
                          tri.counts.method = 'exome2genome',
                          signature.cutoff = cut.off)
   
-  #Plot output
-  # pdf(file.path(fig.path,paste0(sample,"_plotSignatures.pdf")))
-  # plotSignatures(tmp)
-  # invisible(dev.off())
-  # 
-  # pdf(file.path(fig.path,paste0(sample,"_weightPie.pdf")))
-  # makePie(tmp)
-  # invisible(dev.off())
-  
   sigs.out.cosmic2013.list[[sample]] <- tmp
   tmp <- data.frame(c(tmp$weights,unknown=tmp$unknown),row.names = sample)
   mut.wt.cosmic2013 <- rbind.data.frame(mut.wt.cosmic2013,tmp)
@@ -3908,15 +2972,6 @@ for (sample in rownames(sigs.input.sbs)) {
                          contexts.needed = TRUE,
                          tri.counts.method = 'exome2genome',
                          signature.cutoff = cut.off)
-  
-  #Plot output
-  # pdf(file.path(fig.path,paste0(sample,"_plotSignatures.pdf")))
-  # plotSignatures(tmp)
-  # invisible(dev.off())
-  # 
-  # pdf(file.path(fig.path,paste0(sample,"_weightPie.pdf")))
-  # makePie(tmp)
-  # invisible(dev.off())
   
   sigs.out.cosmic2019.list[[sample]] <- tmp
   tmp <- data.frame(c(tmp$weights,unknown=tmp$unknown),row.names = sample)
@@ -3972,7 +3027,7 @@ sig.order <- unlist(index)
 sample.order <- names(group[order(group)])
 
 pdf(file.path(fig.path,"heatmap of NMF clusters in mutation signatures2015 darkcolor.pdf"),width = 8,height = 40)
-pheatmap(# nmf.input[sig.order,sample.order],
+pheatmap(
   nmf.input[,sample.order],
   border_color = "black",
   cluster_cols = F,
@@ -3981,9 +3036,7 @@ pheatmap(# nmf.input[sig.order,sample.order],
   show_colnames = T,
   annotation_col = annCol.mutsig[sample.order,],
   annotation_colors = annColors.mutsig,
-  # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
   color = viridisLite::inferno(64),
-  # gaps_col = table(annCol.mutsig$COSMIC2015)[1],
   gaps_col = c(5,8),
   fontsize = 10,
   cellwidth = 12,
@@ -4139,8 +3192,6 @@ for(i in 1:ncol(tmp)){
 # some formatting
 res <- as.data.frame(res)
 res$Tendency <- ifelse(as.numeric(res$oddsRatio) > 1,"Co-occurrence","Mutual-exclusivity")
-#res$geneA <- factor(res$geneA,levels=c("MLL2","FGFR3","MLL3","KDM6A","ZFP36L1","STAG2","CRIPAK","TP53","GANAB","ARID1A","ARID1B","ARID1A/B","ACTL6B"))
-#res$geneB <- factor(res$geneB,levels=c("MLL2","FGFR3","MLL3","KDM6A","ZFP36L1","STAG2","CRIPAK","TP53","GANAB","ARID1A","ARID1B","ARID1A/B","ACTL6B"))
 res$geneA <- factor(res$geneA,levels=colnames(tmp))
 res$geneB <- factor(res$geneB,levels=colnames(tmp))
 res$oddsRatio <- as.numeric(as.character(res$oddsRatio))
@@ -4151,7 +3202,6 @@ res <- cbind(res,fdr=p.adjust(res$pvalue,"fdr"))
 # change the FDR in labels for plotting
 res$stars <- cut(res$pvalue, breaks=c(-Inf, 0.001, 0.01, 0.05, 0.1, Inf), label=c("***", "**", "*", ".",""))
 # plot with ggplot 2
-#write.table(res,file.path(res.path,"Mutual_exclusivity_for_significant_mutated_genes_addACTL6B_rmNonMut_samples.txt"),sep = "\t",row.names = F)
 write.table(res,file.path(res.path,"Mutual_exclusivity.txt"),sep = "\t",row.names = F)
 
 p <- ggplot(res, aes(geneA, geneB)) + geom_tile(aes(fill = log2OR),colour = "white") + scale_fill_gradient2(low = "darkblue",mid = lightgrey,high = "darkred",midpoint=0) + 
@@ -4162,8 +3212,6 @@ ggsave(file.path(fig.path,"Mutual_exclusivity.pdf"),width = 4,height = 3.5)
 # calculate TMB
 require(dplyr)
 mutect.dataframe <- function(x){
-  #cut_id <- x$Variant_Classification == "Silent"
-  #x <- x[!cut_id,]
   somatic_sum <- x %>% group_by(Tumor_Sample_Barcode) %>% summarise(TMB = n())
 }
 variants_per_sample <- as.data.frame(mutect.dataframe(maf))
@@ -4179,11 +3227,6 @@ focal.sam <- rownames(gaby.wt.mlpa[which(gaby.wt.mlpa$Histology_type == "Focal a
 tmp1 <- as.numeric(variants_per_sample[diffuse.sam,"TMB"])
 tmp2 <- as.numeric(variants_per_sample[focal.sam,"TMB"])
 wilcox.test(tmp1,tmp2) #0.9258
-
-# sample.order <- colnames(mut.matrix)[p@column_order]
-# pdf(file.path(fig.path,"barplot of TMB in gaby wilms cohort.pdf"),width = 5,height = 3.5)
-# barplot(variants_per_sample[sample.order,"TMB"],col = darkblue,border = NA,las = 2,ylab = "Tumor mutation burden")
-# invisible(dev.off())
 
 #----------------------#
 # copy number analysis #
@@ -4382,7 +3425,7 @@ wilcox.test(tmp1,tmp2,alternative = "less") # 0.0754
 tmp <- data.frame(exp = c(tmp1,tmp2),
                   mut = rep(c("Infiltrated","Desert"),c(length(tmp1),length(tmp2))))
 tmp$mut <- factor(tmp$mut,levels = c("Infiltrated","Desert"))
-pdf(file.path(fig.path,"boxplot for Fraction Genome Altered in Gaby WT regarding CCR immune signature group.pdf"),width = 2.5,height = 3.5)
+pdf(file.path(fig.path,"boxplot for Fraction Genome Altered in Gaby WT regarding CCR immune signature group.pdf"),width = 1.8,height = 3.5)
 par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "Immunity status",
@@ -4487,13 +3530,13 @@ com_cna <- intersect(com_gene,cnacomp.gaby$gene)
 annRow.cna <- annRow[com_cna,,drop = F]
 
 plotdata <- cnacomp.gaby[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    "
+blank <- "    " 
 p.value <- cnacomp.gaby[com_cna,"p.loss"]
 sig.label <- ifelse(p.value < 0.001,"****",
                     ifelse(p.value < 0.005,"***",
                            ifelse(p.value < 0.01,"**",
                                   ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value,
+p.label <- formatC(p.value, 
                    format = "e",
                    digits = 2)
 library(stringr)
@@ -4513,7 +3556,7 @@ pheatmap(plotdata[,1:2],
 invisible(dev.off())
 
 plotdata <- cnacomp.gaby[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    " 
+blank <- "    "
 p.value <- cnacomp.gaby[com_cna,"p.amp"]
 sig.label <- ifelse(p.value < 0.001,"****",
                     ifelse(p.value < 0.005,"***",
@@ -4523,7 +3566,7 @@ p.label <- formatC(p.value,
                    format = "e",
                    digits = 2)
 library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
+add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
                      max(nchar(paste0(rownames(plotdata),sig.label))), 
                      side = "right")
 pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in Gaby clusters.pdf"),width = 8,height = 22)
@@ -4689,7 +3732,7 @@ p.label <- formatC(p.value,
                    format = "e",
                    digits = 2)
 library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
+add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
                      max(nchar(paste0(rownames(plotdata),sig.label))), 
                      side = "right")
 pdf(file.path(fig.path,"cna loss percentage of microenviroment factors in target clusters.pdf"),width = 8,height = 22)
@@ -4705,7 +3748,7 @@ pheatmap(plotdata[,1:2],
 invisible(dev.off())
 
 plotdata <- cnacomp.target[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    " 
+blank <- "    "
 p.value <- cnacomp.target[com_cna,"p.amp"]
 sig.label <- ifelse(p.value < 0.001,"****",
                     ifelse(p.value < 0.005,"***",
@@ -4715,7 +3758,7 @@ p.label <- formatC(p.value,
                    format = "e",
                    digits = 2)
 library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
+add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
                      max(nchar(paste0(rownames(plotdata),sig.label))), 
                      side = "right")
 pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in target clusters.pdf"),width = 8,height = 22)
@@ -4815,22 +3858,21 @@ pheatmap(plotdata[,1:2],
          annotation_row = annRow.cna[rownames(plotdata),,drop = F],
          annotation_colors = annColors.micro,
          gaps_row = c(47,86,94,118,122,128,131,146),
-         #gaps_col = 2,
          labels_row = add.label)
 invisible(dev.off())
 
 plotdata <- cnacomp.target.cbio[com_cna,c("loss.C1","loss.C2","amp.C1","amp.C2")]
-blank <- "    " 
+blank <- "    "
 p.value <- cnacomp.target.cbio[com_cna,"p.amp"]
 sig.label <- ifelse(p.value < 0.001,"****",
                     ifelse(p.value < 0.005,"***",
                            ifelse(p.value < 0.01,"**",
                                   ifelse(p.value < 0.05,"*","ns"))))
-p.label <- formatC(p.value, 
+p.label <- formatC(p.value,
                    format = "e",
                    digits = 2)
 library(stringr)
-add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label), 
+add.label <- str_pad(paste0(rownames(plotdata)," ",sig.label),
                      max(nchar(paste0(rownames(plotdata),sig.label))), 
                      side = "right")
 pdf(file.path(fig.path,"cna gain percentage of microenviroment factors in target clusters (cbioportal).pdf"),width = 8,height = 22)
@@ -4841,7 +3883,6 @@ pheatmap(plotdata[,3:4],
          annotation_row = annRow.cna[rownames(plotdata),,drop = F],
          annotation_colors = annColors.micro,
          gaps_row = c(47,86,94,118,122,128,131,146),
-         #gaps_col = 2,
          labels_row = add.label)
 invisible(dev.off())
 
@@ -4854,92 +3895,12 @@ com_gain <- intersect(cnacomp.gaby[which(cnacomp.gaby$p.amp < 0.05),"gene"],
                       cnacomp.target.cbio[which(cnacomp.target.cbio$p.amp < 0.05),"gene"])
 com_gain <- intersect(micro.gene$Symbol,com_gain)
 
-#----------------------------------------------------#
-# validated CD4 activated and NK cells in new scores #
-# tmp <- target.pure.me$es.pure[,c(RNA_Clust1.target,RNA_Clust2.target,RNA_Clust3.target)]
-# tmp1 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust3.target])
-# boxplot(tmp1,c(tmp2,tmp3))
-# 
-# tmp <- target.pure$es.pure[,c(RNA_Clust1.target,RNA_Clust2.target,RNA_Clust3.target)]
-# tmp1 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust1.target])
-# tmp2 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust2.target])
-# tmp3 <- as.numeric(tmp["T.cells.CD4.memory.activated",RNA_Clust3.target])
-# boxplot(tmp1,c(tmp2,tmp3))
-# t.test(tmp1,c(tmp2,tmp3))
-# 
-# com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
-# plotdata <- target.wt[immune.sig.ccr$T.cells.CD4.memory.activated,com_sam]
-# plotdata <- standarize.fun(plotdata,halfwidth = 2)
-# pdf(file.path(fig.path, "heatmap of T.cells.CD4.memory.activated in 114 wilms tumors in target cohort (purified by tp) 3 clusters.pdf"), height=6,width = 10)
-# pheatmap(as.matrix(plotdata),
-#          cluster_rows = F,
-#          cluster_cols = dendsort(hcs.target114),
-#          border_color = NA,
-#          annotation_col = annCol.target114[colnames(plotdata),c(45),drop = F],
-#          annotation_colors = annColors.target114,
-#          color = greenred(64),
-#          treeheight_row = 15,
-#          treeheight_col = 15,
-#          cellwidth = 5,
-#          cellheight = 10,
-#          #gaps_row = c(14,22),
-#          cutree_cols = 3,
-#          show_colnames = F,
-#          show_rownames = T,
-#          fontsize_col = 8)
-# invisible(dev.off())
-# 
-# plotdata <- standarize.fun(gaby.wt[immune.sig.ccr$T.cells.CD4.memory.activated,rownames(cluster2.wt.gaby.mRNA.ans$annCol)],halfwidth = 2)
-# pdf(file.path(fig.path, "heatmap of T.cells.CD4.memory.activated in wilms tumors in gaby cohort (purified by tp).pdf"), height=6,width = 10)
-# pheatmap(as.matrix(plotdata),
-#          cluster_rows = F,
-#          cluster_cols = as.hclust(cluster2.wt.gaby.mRNA.ans$dendro),
-#          border_color = "black",
-#          annotation_col = annCol.wt.gaby.genomic.alter[,1:2],
-#          annotation_colors = annColors.wt.gaby.genomic.alter,
-#          # color = viridisLite::inferno(64),
-#          # color = viridisLite::viridis(64),
-#          color = greenred(64),
-#          treeheight_row = 15,
-#          treeheight_col = 15,
-#          cellwidth = 15,
-#          cellheight = 10,
-#          show_colnames = T,
-#          show_rownames = T,
-#          cutree_cols = 2,
-#          fontsize_col = 8)
-# invisible(dev.off())
-
 #---------------------------------------------------------------#
 # map full list of cibersort CD8 and CD4 to original CCR cluter #
 cd8 <- immune.sig.me$T.cells.CD8
 cd4.native <- immune.sig.me$T.cells.CD4.naive
 cd4.activated <- immune.sig.me$T.cells.CD4.memory.activated
 cd4.resting <- immune.sig.me$T.cells.CD4.memory.resting
-
-# com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
-# plotdata <- target.wt[unique(c(cd8,cd4.native,cd4.activated,cd4.resting)),com_sam]
-# plotdata <- standarize.fun(plotdata,halfwidth = 2)
-# pdf(file.path(fig.path, "heatmap of cd8 cd4 in 114 wilms tumors in target cohort (purified by tp) 3 clusters.pdf"), height=20,width = 10)
-# pheatmap(as.matrix(plotdata),
-#          cluster_rows = F,
-#          cluster_cols = dendsort(hcs.target114),
-#          border_color = NA,
-#          annotation_col = annCol.target114[colnames(plotdata),c(45),drop = F],
-#          annotation_colors = annColors.target114,
-#          color = greenred(64),
-#          treeheight_row = 15,
-#          treeheight_col = 15,
-#          cellwidth = 5,
-#          cellheight = 9,
-#          #gaps_row = c(14,22),
-#          cutree_cols = 3,
-#          show_colnames = F,
-#          show_rownames = T,
-#          fontsize_col = 8)
-# invisible(dev.off())
 
 com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
 plotdata <- target.wt[cd8,com_sam]
@@ -5018,8 +3979,6 @@ rms2curve <- function(surv.df = NULL, immune.matrix = NULL, main.marker = NULL, 
     cindex2 <- concordance.index(predict(fit2),surv.time = tmp$OS.time,surv.event = tmp$OS,method = "noether")
     ccomp <- cindex.comp(cindex1, cindex2)
     
-    #rmst <- rmst2(time = tmp$OS.time, status = tmp$OS,arm = ifelse(tmp$Cluster == "hot",1,0),tau = NULL)
-    
     # RMS Curve
     fig.name <- paste0(prefix,"_",cell,".pdf")
     pdf(file.path(fig.path,fig.name),width = width,height = height)
@@ -5052,24 +4011,15 @@ coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(indata["T.cells.CD4.memory.activated",
 coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(indata["T.cells.CD4.memory.resting",]))
 coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(indata["T.cells.CD4.naive",]))
 coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(indata["T.cells.CD8",]))
-#tmp1 <- as.numeric(indata["T.cells.CD4.memory.activated",])-as.numeric(indata["T.cells.CD8",])
 tmp1 <- abs(as.numeric(indata["T.cells.CD4.memory.activated",])-as.numeric(indata["T.cells.CD8",]))/max(abs(as.numeric(indata["T.cells.CD4.memory.activated",])),abs(as.numeric(indata["T.cells.CD8",])))
 
 coxph(Surv(tmp$OS.time,tmp$OS)~tmp1)
 
 range01 <- function(x){(x-min(x))/(max(x)-min(x))}
 
-# cd48.activated <- exp(indata["T.cells.CD4.memory.activated",]-indata["T.cells.CD8",]); names(cd48.activated) <- colnames(indata)
-# cd48.naive <- exp(indata["T.cells.CD4.naive",]-indata["T.cells.CD8",]); names(cd48.naive) <- colnames(indata)
-# cd48.resting <- exp(indata["T.cells.CD4.memory.resting",]-indata["T.cells.CD8",]); names(cd48.resting) <- colnames(indata)
-
 cd48.activated <- indata["T.cells.CD4.memory.activated",]-indata["T.cells.CD8",]; names(cd48.activated) <- colnames(indata)
 cd48.naive <- indata["T.cells.CD4.naive",]-indata["T.cells.CD8",]; names(cd48.naive) <- colnames(indata)
 cd48.resting <- indata["T.cells.CD4.memory.resting",]-indata["T.cells.CD8",]; names(cd48.resting) <- colnames(indata)
-
-# cd48.activated <- range01((indata["T.cells.CD4.memory.activated",] + 0.01)/(indata["T.cells.CD8",] + 0.01)); names(cd48.activated) <- colnames(indata)
-# cd48.naive <- range01((indata["T.cells.CD4.naive",] + 0.01)/(indata["T.cells.CD8",] + 0.01)); names(cd48.naive) <- colnames(indata)
-# cd48.resting <- range01((indata["T.cells.CD4.memory.resting",] + 0.01)/(indata["T.cells.CD8",] + 0.01)); names(cd48.resting) <- colnames(indata)
 
 indata <- as.data.frame(t(apply(indata, 1, range01)))
 cd48.activated <- range01(cd48.activated)
@@ -5082,13 +4032,11 @@ rms2curve(surv.df = tmp,
 
 tmp1 <- as.numeric(cd48.activated[RNA_Clust1.target])
 tmp2 <- as.numeric(cd48.activated[RNA_Clust2.target])
-#tmp3 <- as.numeric(cd48.activated[RNA_Clust3.target])
 wilcox.test(tmp1,tmp2)
 boxplot(tmp1,tmp2)
 
 tmp1 <- as.numeric(indata["T.cells.CD4.memory.activated",RNA_Clust1.target])
 tmp2 <- as.numeric(indata["T.cells.CD4.memory.activated",RNA_Clust2.target])
-#tmp3 <- as.numeric(indata["T.cells.CD4.memory.activated",RNA_Clust3.target])
 t.test(tmp1,tmp2)
 boxplot(tmp1,tmp2)
 
@@ -5127,7 +4075,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=cd48.cat,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Days)",
@@ -5154,7 +4101,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=cd8.cat,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Days)",
@@ -5181,7 +4127,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=cd4.cat,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Days)",
@@ -5251,11 +4196,9 @@ invisible(dev.off())
 # use cibersort results
 tmp <- read.table(file.path(res.path,"CIBERSORT.Output.relative.Wilms_tumor_TARGET.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F)
 tmp <- tmp[,1:22]
-# com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
 indata <- as.data.frame(t(tmp))
 tmp <- data.frame(OS.time = Sinfo.target$`Overall Survival Time in Days`,
                   OS = ifelse(Sinfo.target$`Vital Status` == "Dead",1,0),
-                  #tune_Clust = annCol.target114[rownames(Sinfo.target),"tune_Clust"],
                   row.names = rownames(Sinfo.target),
                   stringsAsFactors = F)
 tmp <- tmp[colnames(indata),]
@@ -5326,7 +4269,6 @@ t.cell.survival <- c("CD70","CD27")
 regulatory.t.cell <- c("FOXP3","TNFRSF18")
 MHC.I <- c("HLA-A","HLA-B","HLA-C","HLA-E","HLA-F","HLA-G","B2M")
 MCC <- c("CCL2")
-# TLS <- c("CXCL13")
 TLS <- c("CCL21","CCL19","CXCL13","CXCL11","CCL8","CXCL10","CXCL9","CCL2","CCL3","CCL18","CCL5","CCL4")
 
 geometric.mean.rm0 <- function (x, na.rm = TRUE) 
@@ -5349,12 +4291,6 @@ regulatory.t.cell.target <- apply(target.wt[regulatory.t.cell,], 2, geometric.me
 MHC.I.target <- apply(target.wt[MHC.I,], 2, geometric.mean.rm0)
 TLS.target <- apply(target.wt[TLS,], 2, geometric.mean.rm0)
 
-# immunosuppression.target <- apply(target.wt[immunosuppression,], 2, geometric.mean)
-# t.cell.activation.target <- apply(target.wt[t.cell.activation,], 2, geometric.mean)
-# t.cell.survival.target <- apply(target.wt[t.cell.survival,], 2, geometric.mean)
-# regulatory.t.cell.target <- apply(target.wt[regulatory.t.cell,], 2, geometric.mean)
-# MHC.I.target <- apply(target.wt[MHC.I,], 2, geometric.mean)
-
 indata <- rbind.data.frame(immunosuppression.target,
                            t.cell.activation.target,
                            t.cell.survival.target,
@@ -5372,66 +4308,6 @@ rownames(indata) <- c("Immunosuppression",
                       "tertiary lymphoid structures")
 colnames(indata) <- colnames(target.wt)
 TME.raw.dat <- indata
-
-# com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target))
-# plotdata <- as.data.frame(target.pure$es.pure[,com_sam])
-# plotdata <- rbind.data.frame(plotdata,indata[,com_sam])
-# plotdata <- rbind.data.frame(plotdata,target.wt[immune.checkpoint,com_sam])
-# plotdata <- standarize.fun(plotdata,halfwidth = 2)
-# 
-# TME.dat <- plotdata
-# row.order <- c(immune.sig.ccr.order,
-#                rownames(indata),
-#                immune.checkpoint)
-# pdf(file.path(fig.path, "comprehensive immune signature heatmap of 114 wilms tumors in target cohort (purified by tp) 3 clusters.pdf"), height=60,width = 15)
-# pheatmap(as.matrix(TME.dat[setdiff(row.order,c("Regulatory T cell","myeloid cell chemotaxis")),]),
-#          cluster_rows = F,
-#          cluster_cols = dendsort(hcs.target114),
-#          border_color = NA,
-#          annotation_col = annCol.target114[colnames(plotdata),c(45,5,4,41,37,42,43,44,1:3,6:21,24:36)],
-#          annotation_colors = annColors.target114,
-#          color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-#          treeheight_row = 15,
-#          treeheight_col = 15,
-#          cellwidth = 5,
-#          cellheight = 10,
-#          gaps_row = c(14,22,24,29),
-#          cutree_cols = 3,
-#          show_colnames = F,
-#          show_rownames = T,
-#          fontsize_col = 8)
-# invisible(dev.off())
-# 
-# dd <- as.data.frame(t(indata[,target.pure$keep.sam]))
-# dd$RNA_Clust <- annCol.target114[rownames(dd),"tune_Clust"]
-# #dd$RNA_Clust <- ifelse(dd$RNA_Clust == "C1","Infiltrated","Desert")
-# #dd$RNA_Clust <- factor(dd$RNA_Clust,levels = c("Infiltrated","Desert"))
-# dd$sample <- rownames(dd)
-# d2 <- gather(dd, cell, expr, 1:7)
-# d2$cell <- factor(d2$cell,levels = rownames(indata))
-# 
-# pvalues <- sapply(d2$cell, function(x) {
-#   res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-#   return(res$p.value) #
-#    
-#   # res <- aov(expr ~ RNA_Clust, data = subset(d2, cell == x))
-#   # summary(res)[[1]]$'Pr(>F)'[1] #
-#   # 
-#   # res <- t.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-#   # return(res$p.value) #
-# 
-# })
-# pv <- data.frame(gene = d2$cell, pvalue = pvalues)
-# pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
-#                   labels=c('***', '**', '*', '.', ' '))
-# 
-# ggplot(d2, aes(cell, expr, fill=RNA_Clust)) + scale_fill_manual(values = c(jco[2],jco[1],seagreen)) +
-#   geom_boxplot() + 
-#   geom_text(aes(gene, y=max(d2$expr) * 1.1, 
-#                 label=pv$sigcode),
-#             data=pv, inherit.aes=F) + 
-#   xlab(NULL)+ylab("Enrichment score") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
-# ggsave(file.path(fig.path,"boxplot for other TMEs among three clusters in 114 target cohort.pdf"),width = 10,height = 5)
 
 #-----------------------------------------------------#
 # Recluster to see if immune group could be seperated #
@@ -5518,7 +4394,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=tmp,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Days)",
@@ -5538,22 +4413,13 @@ pairwise_survdiff(Surv(OS.time, OS)~ tune_Clust, data=tmp, p.adjust.method = "no
 
 dd <- as.data.frame(t(TME.raw.dat[c(1,2,3,5,7),target.pure$keep.sam]))
 dd$RNA_Clust <- annCol.target114[rownames(dd),"tune_Clust3"]
-#dd$RNA_Clust <- ifelse(dd$RNA_Clust == "C1","Infiltrated","Desert")
-#dd$RNA_Clust <- factor(dd$RNA_Clust,levels = c("Infiltrated","Desert"))
 dd$sample <- rownames(dd)
 d2 <- gather(dd, cell, expr, 1:5)
 d2$cell <- factor(d2$cell,levels = rownames(indata))
 
 pvalues <- sapply(d2$cell, function(x) {
   res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-  
-  # res <- aov(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  # summary(res)[[1]]$'Pr(>F)'[1] #
-  # 
-  # res <- t.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  # return(res$p.value) #
-  
+  return(res$p.value)
 })
 pv <- data.frame(gene = d2$cell, pvalue = pvalues)
 pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
@@ -5569,22 +4435,13 @@ ggsave(file.path(fig.path,"boxplot for other TMEs among modified three clusters 
 
 dd <- as.data.frame(t(target.wt[immune.checkpoint,target.pure$keep.sam]))
 dd$RNA_Clust <- annCol.target114[rownames(dd),"tune_Clust3"]
-#dd$RNA_Clust <- ifelse(dd$RNA_Clust == "C1","Infiltrated","Desert")
-#dd$RNA_Clust <- factor(dd$RNA_Clust,levels = c("Infiltrated","Desert"))
 dd$sample <- rownames(dd)
 d2 <- gather(dd, cell, expr, 1:5)
 d2$cell <- factor(d2$cell,levels = immune.checkpoint)
 
 pvalues <- sapply(d2$cell, function(x) {
   res <- kruskal.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  return(res$p.value) #
-  
-  # res <- aov(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  # summary(res)[[1]]$'Pr(>F)'[1] #
-  # 
-  # res <- t.test(expr ~ RNA_Clust, data = subset(d2, cell == x))
-  # return(res$p.value) #
-  
+  return(res$p.value) 
 })
 pv <- data.frame(gene = d2$cell, pvalue = pvalues)
 pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
@@ -5628,7 +4485,6 @@ for(cell in rownames(indata)) {
                                                stringsAsFactors = F),
                              stringsAsFactors = F)
 }
-#outTab$FDR <- p.adjust(outTab$p.kruskal,method = "BH")
 write.table(outTab,file.path(res.path,"comparision of TME between three modified target clusters.txt"),sep = "\t",row.names = F,quote = F)
 
 com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
@@ -5657,7 +4513,6 @@ for(cell in rownames(indata)) {
                                                stringsAsFactors = F),
                              stringsAsFactors = F)
 }
-#outTab$FDR <- p.adjust(outTab$p.kruskal,method = "BH")
 write.table(outTab,file.path(res.path,"comparision of immune checkpoint between three modified target clusters.txt"),sep = "\t",row.names = F,quote = F)
 
 com_sam <- intersect(target.pure$keep.sam,rownames(annCol.target114))
@@ -5709,7 +4564,6 @@ indata <- rbind.data.frame(immunosuppression.gaby,
                            regulatory.t.cell.gaby,
                            MHC.I.gaby,
                            gaby.wt[MCC,],
-                           #gaby.wt[TLS,],
                            TLS.gaby)
 rownames(indata) <- c("Immunosuppression",
                       "T cell activation",
@@ -5733,9 +4587,6 @@ pheatmap(as.matrix(plotdata[setdiff(row.order,c("Regulatory T cell","myeloid cel
          annotation_col = annCol.wt.gaby.genomic.alter[,setdiff(colnames(annCol.wt.gaby.genomic.alter),c("TP53 mutations","1q gain","16p STATUS"))],
          annotation_colors = annColors.wt.gaby.genomic.alter,
          color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         # color = greenred(64),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 15,
@@ -5747,42 +4598,6 @@ pheatmap(as.matrix(plotdata[setdiff(row.order,c("Regulatory T cell","myeloid cel
          fontsize_col = 8)
 invisible(dev.off())
 
-#------------------------------------#
-# prognostic value of non-coding RNA #
-
-# 1. target cohort
-indata <- log2(TPM[Lids,rownames(annCol.target)] + 1)
-indata <- indata[rowSums(indata) > 0,]
-indata$symbol <- Ginfo[rownames(indata),"genename"]
-indata <- apply(indata[,setdiff(colnames(indata), "symbol")], 2, function(x) tapply(x, INDEX=factor(indata$symbol), FUN=median, na.rm=TRUE))
-write.table(indata,file = file.path(res.path,"Wilms_tumor_TARGET_lncRNA_log2TPM_hugo.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-target.wt.lnc <- as.data.frame(indata[,colnames(target.wt)])
-
-Coxoutput.OS <- NULL
-for (i in 1:nrow(target.wt.lnc)) {
-  display.progress(index = i,totalN = nrow(target.wt.lnc)) 
-  
-  tmp <- data.frame(gene = as.numeric(target.wt.lnc[i,]),
-                    OS.time = target.wt.info[,"OS.time"],
-                    OS = ifelse(target.wt.info[,"OS"] == "Dead",1,0),
-                    stringsAsFactors = F)
-  
-  cox <- coxph(Surv(OS.time, OS) ~ gene, data = tmp)
-  coxSummary = summary(cox)
-  
-  Coxoutput.OS=rbind.data.frame(Coxoutput.OS,data.frame(gene=rownames(target.wt.lnc)[i],
-                                                        HR=as.numeric(coxSummary$coefficients[,"exp(coef)"]),
-                                                        z=as.numeric(coxSummary$coefficients[,"z"]),
-                                                        pvalue=as.numeric(coxSummary$coefficients[,"Pr(>|z|)"]),
-                                                        lower=as.numeric(coxSummary$conf.int[,3]),
-                                                        upper=as.numeric(coxSummary$conf.int[,4]),
-                                                        stringsAsFactors = F),
-                                stringsAsFactors = F)
-}
-Coxoutput.OS$FDR <- p.adjust(Coxoutput.OS$pvalue,method = "BH")
-write.csv(Coxoutput.OS,file.path(res.path,"univariate cox regression for lncRNA in target cohort.csv"),row.names = F,quote = F)
-
 #--------------------------------#
 # check EZH2 and CBX2 expression #
 ezh2.gaby.c1 <- as.numeric(gaby.wt["EZH2",RNA_Clust1])
@@ -5791,7 +4606,7 @@ wilcox.test(ezh2.gaby.c1,ezh2.gaby.c2) #0.007937
 tmp <- data.frame(exp = c(ezh2.gaby.c1,ezh2.gaby.c2),
                   mut = rep(c("C1","C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-pdf(file.path(fig.path,"boxplot for EZH2 expression in gaby WT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
+pdf(file.path(fig.path,"boxplot for EZH2 expression in gaby WT cohort regarding RNA cluster.pdf"),width = 1.8,height = 3.5)
 par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "RNA Cluster",
@@ -5815,7 +4630,7 @@ wilcox.test(ezh2.path.gaby.c1,ezh2.path.gaby.c2) #0.007937
 tmp <- data.frame(exp = c(ezh2.path.gaby.c1,ezh2.path.gaby.c2),
                   mut = rep(c("C1","C2"),c(5,5)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-pdf(file.path(fig.path,"boxplot for EZH2 target in gaby WT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
+pdf(file.path(fig.path,"boxplot for EZH2 target in gaby WT cohort regarding RNA cluster.pdf"),width = 1.8,height = 3.5)
 par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "RNA Cluster",
@@ -5828,25 +4643,6 @@ stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
 text(1.5,1,"P = 0.008",cex = 1)
 invisible(dev.off())
 
-# cbx2.gaby.c1 <- as.numeric(gaby.wt["CBX2",RNA_Clust1])
-# cbx2.gaby.c2 <- as.numeric(gaby.wt["CBX2",RNA_Clust2])
-# wilcox.test(cbx2.gaby.c1,cbx2.gaby.c2) #0.007937
-# tmp <- data.frame(exp = c(cbx2.gaby.c1,cbx2.gaby.c2),
-#                   mut = rep(c("C1","C2"),c(5,5)))
-# tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-# pdf(file.path(fig.path,"boxplot for CBX2 expression in gaby WT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
-# par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
-# boxplot(exp~mut,data = tmp,
-#         xlab = "RNA Cluster",
-#         ylab = "log2(TPM) in Gaby",
-#         ylim = c(0,5),
-#         outline = F,
-#         col = ggplot2::alpha(jco[2:1],0.7))
-# stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
-#            method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
-# text(1.5,5,"P = 0.008",cex = 1)
-# invisible(dev.off())
-
 ezh2.target.c1 <- as.numeric(target.wt["EZH2",RNA_Clust1.target])
 ezh2.target.c2 <- as.numeric(target.wt["EZH2",RNA_Clust2.target])
 wilcox.test(ezh2.target.c1,ezh2.target.c2) #9.02e-05
@@ -5858,7 +4654,6 @@ par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "RNA Cluster",
         ylab = "log2(TPM) in target",
-        #ylim = c(1,5),
         outline = F,
         col = ggplot2::alpha(jco[2:1],0.7))
 stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
@@ -5889,24 +4684,6 @@ stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
            method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
 text(1.5,1.6,"P < 0.001",cex = 1)
 invisible(dev.off())
-# cbx2.target.c1 <- as.numeric(target.wt["CBX2",RNA_Clust1.target])
-# cbx2.target.c2 <- as.numeric(target.wt["CBX2",RNA_Clust2.target])
-# wilcox.test(cbx2.target.c1,cbx2.target.c2) #0.0005336
-# tmp <- data.frame(exp = c(cbx2.target.c1,cbx2.target.c2),
-#                   mut = rep(c("C1","C2"),c(69,27)))
-# tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-# pdf(file.path(fig.path,"boxplot for CBX2 expression in target WT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
-# par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
-# boxplot(exp~mut,data = tmp,
-#         xlab = "RNA Cluster",
-#         ylab = "log2(TPM) in target",
-#         #ylim = c(0,5),
-#         outline = F,
-#         col = ggplot2::alpha(jco[2:1],0.7))
-# stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
-#            method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
-# text(1.5,8,"P < 0.001",cex = 1)
-# invisible(dev.off())
 
 #----------------------------------------------------------------------#
 # create oncoprint with mutated features, cna and clinical information #
@@ -5939,7 +4716,7 @@ my_annotation = HeatmapAnnotation(df = tmp,
                                   height = unit(30,"mm"))
 alter_fun = list(
   background = function(x, y, w, h) {
-    grid.rect(x, y, w-unit(0.5, "mm"), h-unit(0.5, "mm"), gp = gpar(fill = "grey90", col = NA)) 
+    grid.rect(x, y, w-unit(0.5, "mm"), h-unit(0.5, "mm"), gp = gpar(fill = "grey90", col = NA))
   },
   SM = function(x, y, w, h) {
     grid.rect(x, y, w-unit(0.5, "mm"), h-unit(0.5, "mm"), gp = gpar(fill = darkred, col = NA)) 
@@ -5952,7 +4729,6 @@ alter_fun = list(
   }
 )
 
-#bar plot
 col = c("SM" = darkred, 
         "GM" = lightred, 
         "Yes" = darkblue)
@@ -5979,7 +4755,6 @@ invisible(dev.off())
 
 #-----------------------------#
 # forest plot for gaby cohort #
-# https://stats.stackexchange.com/questions/124821/dealing-with-no-events-in-one-treatment-group-survival-analysis
 library(survival)
 library(forestplot)
 library(survminer)
@@ -5997,25 +4772,6 @@ tmp[RNA_Clust2,"RNA_clust"] <- "C2"
 tmp$TP53 <- as.character(mygene["TP53",rownames(tmp)])
 tmp$TP53 <- ifelse(tmp$TP53 != "",1, 0)
 fisher.test(table(tmp$TP53,tmp$RNA_clust))
-# unicox <- data.frame()
-# for(i in colnames(tmp)[c(1,2,3,4,5,8)]){
-#   
-#   tmp1 <- data.frame(var = tmp[,i],
-#                      futime = tmp$OS.time,
-#                      fustat = tmp$OS,
-#                      stringsAsFactors = F)
-#   cox <- coxph(Surv(futime, fustat) ~ var, data = tmp1)
-#   coxSummary <- summary(cox)
-#   unicox <- rbind.data.frame(unicox,
-#                              data.frame(var = i,
-#                                         HR = as.numeric(coxSummary$coefficients[,"exp(coef)"])[1],
-#                                         z = as.numeric(coxSummary$coefficients[,"z"])[1],
-#                                         pvalue = as.numeric(coxSummary$coefficients[,"Pr(>|z|)"])[1],
-#                                         lower = as.numeric(coxSummary$conf.int[,3][1]),
-#                                         upper = as.numeric(coxSummary$conf.int[,4][1]),
-#                                         stringsAsFactors = F),
-#                              stringsAsFactors = F)
-# }
 
 fitd <- survdiff(Surv(OS.time, OS) ~ RNA_clust,
                  data      = tmp,
@@ -6055,11 +4811,17 @@ pdf(file.path(fig.path,"km in 2 RNA_clust in Gaby wt cohort.pdf"), width = 4.5, 
 print(p)
 dev.off()
 
-fitd <- survdiff(Surv(PFS.time, PFS) ~ RNA_clust,
+data <- read_xlsx("E:/IGBMC/myproject/Wilms/Manuscript/New version/Submission/Nat Commun/Supplementary Tables-R1.xlsx", sheet = 1, skip = 1)
+data <- as.data.frame(data)
+tmp <- data[which(data$Has_RNAseq == "Yes"),]
+tmp$RNA_clust <- rep(c("dWT","iWT"), c(5,5))
+tmp$RNA_clust <- factor(tmp$RNA_clust, levels = c("iWT","dWT"))
+tmp$RFS.time <- tmp$RFS.time/12
+fitd <- survdiff(Surv(RFS.time, RFS) ~ RNA_clust,
                  data      = tmp,
                  na.action = na.exclude)
 p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
-fit <- survfit(Surv(PFS.time, PFS)~ RNA_clust,
+fit <- survfit(Surv(RFS.time, RFS)~ RNA_clust,
                data      = tmp,
                type      = "kaplan-meier",
                error     = "greenwood",
@@ -6072,20 +4834,19 @@ p <- ggsurvplot(fit               = fit,
                 risk.table.col    = "strata",
                 palette           = jco[2:1],
                 data              = tmp,
-                xlim              = c(0,86),
                 size              = 1,
-                break.time.by     = 12,
+                break.time.by     = 1,
                 legend.title      = "",
                 surv.median.line  = "hv",
-                xlab              = "Time (Months)",
-                ylab              = "Progression-free survival (%)",
+                xlab              = "Time (Years)",
+                ylab              = "Recurrence-free survival (%)",
                 risk.table.y.text = FALSE)
 p$plot <- p$plot + scale_y_continuous(breaks = seq(0, 1, 0.25), labels = seq(0,100,25))
 p.lab <- paste0("P",
                 ifelse(p.val < 0.001, " < 0.001",
                        paste0(" = ",round(p.val, 3))))
 p$plot <- p$plot + annotate("text",
-                            x = 24, y = 0.55,
+                            x = 2, y = 0.55,
                             hjust = 0,
                             fontface = 4,
                             label = p.lab)
@@ -6093,16 +4854,6 @@ pdf.options(reset = TRUE, onefile = FALSE)
 pdf(file.path(fig.path,"km recurrence in 2 RNA_clust in Gaby wt cohort.pdf"), width = 4.5, height = 5)
 print(p)
 dev.off()
-
-#--------------#
-# compared TMB #
-# tmp1 <- gaby.wt.mlpa[which(gaby.wt.mlpa$Histology_type == "ANA diffuse"),"TMB"]
-# tmp2 <- gaby.wt.mlpa[which(gaby.wt.mlpa$Histology_type == "Focal anaplasia"),"TMB"]
-# wilcox.test(tmp1,tmp2)
-# 
-# tmp1 <- gaby.wt.mlpa[RNA_Clust1,"TMB"]
-# tmp2 <- gaby.wt.mlpa[RNA_Clust2,"TMB"]
-# wilcox.test(tmp1,tmp2)
 
 #----------------------------------------#
 # compare CD count ragarding TP53 status #
@@ -6171,15 +4922,6 @@ p<- ggplot(df2, aes(x=Lymph, y=value, fill=TP53)) +
 p
 ggsave(filename = file.path(fig.path,"barplot for CD count regarding TP53 mutations.pdf"), width = 3,height = 4)
 
-# p<- ggplot(df2.2, aes(x=Lymph, y=value, fill=TP53)) + 
-#   geom_bar(stat="identity", color="black", 
-#            position=position_dodge()) +
-#   geom_errorbar(aes(ymin=value-std, ymax=value+std), width=.2,
-#                 position=position_dodge(.9)) +labs(title="", x="Lymphocytes ", y = "Count")+
-#   theme_classic() +
-#   scale_fill_manual(values=c(darkred,darkblue))
-# 
-
 #-----------------#
 # TIDE prediction #
 TIDE <- round(sweep(gaby.wt,2, apply(gaby.wt, 2, median)),2)
@@ -6231,7 +4973,6 @@ invisible(dev.off())
 par(bty="o", mgp = c(1.5,.33,0), mar=c(3,3,1,0.1), las=1, tcl=-.25,las = 1)
 barplot(wt3$`CD4 count`,col = alpha("#5CC169",0.8), border = NA)
 barplot(wt3$`CD8 count`,add = T, col = alpha("#410155",0.8), border = NA)
-#tmp2 <- tmp[which(tmp$mut %in% c("CD4","CD8")),]
 tmp2 <- tmp
 samorder <- rownames(wt3[order(wt3$`CD3 count`,decreasing = F),])
 tmp2$sam <- factor(tmp2$sam,levels = samorder)
@@ -6365,8 +5106,8 @@ tabletext[2,2:3] <- NA
 
 pdf(file.path(fig.path,"forestplot of risk table of 55 WTs regarding RFS.pdf"), width = 8, height = 6)
 forestplot(labeltext=tabletext,
-           mean=c(NA,log2(as.numeric(hrtable$HR))),#log2(HR)
-           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))), 
+           mean=c(NA,log2(as.numeric(hrtable$HR))),
+           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))),
            upper=c(NA,log2(as.numeric(hrtable$upper.95CI))),
            graph.pos=3,
            graphwidth = unit(.25,"npc"),
@@ -6410,8 +5151,8 @@ tabletext[2,2:3] <- NA
 
 pdf(file.path(fig.path,"forestplot of risk table of 55 WTs regarding OS.pdf"), width = 8, height = 6)
 forestplot(labeltext=tabletext,
-           mean=c(NA,log2(as.numeric(hrtable$HR))),#log2(HR)
-           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))), 
+           mean=c(NA,log2(as.numeric(hrtable$HR))),
+           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))),
            upper=c(NA,log2(as.numeric(hrtable$upper.95CI))),
            graph.pos=3,
            graphwidth = unit(.25,"npc"),
@@ -6478,10 +5219,7 @@ p <- pheatmap(as.matrix(plotdata),
          border_color = "black",
          annotation_col = annCol.wt.gaby.genomic.alter[,c("HRS","RNA_Clust","Histology","OS","TP53 mutations","TP53 STATUS")],
          annotation_colors = annColors.wt.gaby.genomic.alter[c("HRS","RNA_Clust","Histology","OS","TP53 mutations","TP53 STATUS")],
-         #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-         # color = viridisLite::inferno(64),
-          color = viridisLite::viridis(64),
-         # color = greenred(64),
+         color = viridisLite::viridis(64),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 15,
@@ -6513,7 +5251,6 @@ p <- pheatmap(as.matrix(plotdata),
               border_color = NA,
               annotation_col = annCol.target114[colnames(plotdata),c(48,40,4,34,1)],
               annotation_colors = annColors.target114[c("HRS","tune_Clust", "HISTOLOGY", "OS","TP53_MUT")],
-              #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
               color = viridisLite::viridis(64),
               treeheight_row = 15,
               treeheight_col = 15,
@@ -6539,7 +5276,6 @@ fisher.test(table(annCol.wt.gaby.genomic.alter$HRS,annCol.wt.gaby.genomic.alter$
 #         ANA diffuse Focal anaplasia
 # RS-High           4               0
 # RS-Low            3               3
-
 
 # drug sensitivity analysis
 library(pRRophetic)
@@ -6585,10 +5321,9 @@ comgene <- intersect(rownames(trainExpr),rownames(testExpr))
 trainExpr <- as.matrix(trainExpr[comgene,])
 testExpr <- testExpr[comgene,]
 outTab <- NULL
-for (i in 1:ncol(trainPtype)) { 
+for (i in 1:ncol(trainPtype)) {
   display.progress(index = i,totalN = ncol(trainPtype))
   d <- colnames(trainPtype)[i]
-  #tmp <- log2(as.vector(trainPtype[,d]) + 0.00001) 
   tmp <- as.vector(trainPtype[,d])
   
   ptypeOut <- quiet(calcPhenotype(trainingExprData = as.matrix(trainExpr),
@@ -6596,7 +5331,6 @@ for (i in 1:ncol(trainPtype)) {
                                   testExprData = as.matrix(testExpr),
                                   powerTransformPhenotype = T,
                                   selection = 1))
-  #ptypeOut <- 2^ptypeOut - 0.00001 #
   outTab <- rbind.data.frame(outTab,ptypeOut)
 }
 dimnames(outTab) <- list(colnames(trainPtype),colnames(testExpr))
@@ -6818,10 +5552,9 @@ comgene <- intersect(rownames(trainExpr),rownames(testExpr))
 trainExpr <- as.matrix(trainExpr[comgene,])
 testExpr <- testExpr[comgene,]
 outTab <- NULL
-for (i in 1:ncol(trainPtype)) { # 
+for (i in 1:ncol(trainPtype)) {
   display.progress(index = i,totalN = ncol(trainPtype))
   d <- colnames(trainPtype)[i]
-  #tmp <- log2(as.vector(trainPtype[,d]) + 0.00001) 
   tmp <- as.vector(trainPtype[,d])
   
   ptypeOut <- quiet(calcPhenotype(trainingExprData = as.matrix(trainExpr),
@@ -6829,7 +5562,6 @@ for (i in 1:ncol(trainPtype)) { #
                                   testExprData = as.matrix(testExpr),
                                   powerTransformPhenotype = T,
                                   selection = 1))
-  #ptypeOut <- 2^ptypeOut - 0.00001 #
   outTab <- rbind.data.frame(outTab,ptypeOut)
 }
 dimnames(outTab) <- list(colnames(trainPtype),colnames(testExpr))
@@ -7046,358 +5778,6 @@ stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
 text(1.5,5,"P = 0.018",cex = 1)
 invisible(dev.off())
 
-#--------------#
-# ERV analysis #
-erv.anno <- read.delim(file.path(comAnn.path,"ERVmap_hg38_XSU_annotation.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-
-library(DESeq2)
-erv.count <- read.delim(file.path(data.path,"Gaby_Wilms_ERVs_Data.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-#erv.count <- erv.count[apply(erv.count, 1, function(x) sum(x == 0) < 0.1 * ncol(erv.count)),]
-erv.subt <- read.table(file.path(data.path,"Gaby_Wilms_Subtype.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-identical(colnames(erv.count),rownames(erv.subt))
-erv.subt <- erv.subt[colnames(erv.count),]
-saminfo <- data.frame("Type" = as.factor(erv.subt$Subtype),
-                      "SampleID" = rownames(erv.subt),
-                      row.names = rownames(erv.subt),
-                      stringsAsFactors = FALSE)
-
-dds <- DESeq2::DESeqDataSetFromMatrix(countData = erv.count,
-                                      colData = saminfo,
-                                      design = as.formula("~ Type"))
-dds <- estimateSizeFactors(dds)
-sizeFactors(dds)
-erv.normcount <- counts(dds, normalized=TRUE)
-write.table(erv.normcount,file.path(res.path,"Gaby_Wilms_ERVs_normalizedcount.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-# unsupervised clustering using Gaby wilms ERV
-indata <- log2(erv.normcount[,c(colnames(gaby.wt),colnames(target.wt))] + 1)
-var <- apply(indata, 1, mad)
-sel_gene <- var[var > quantile(var,probs = seq(0,1,0.25))[4]]
-
-indata <- log2(erv.normcount[,colnames(gaby.wt)] + 1)
-#var <- apply(indata, 1, mad)
-#sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-#sel_gene <- var[var > quantile(var,probs = seq(0,1,0.25))[4]]
-#sel_gene <- sort(var,decreasing = T)[1:200]
-indata <- indata[names(sel_gene),]
-
-hcg <- hclust(distanceMatrix(as.matrix(t(indata)), "pearson"), "ward.D")
-hcs <- hclust(distanceMatrix(as.matrix(indata), "pearson"), "ward.D")
-erv.group.gaby <- cutree(hcs, 2)
-erv.group.gaby <- paste0("ERV-C",erv.group.gaby); names(erv.group.gaby) <- colnames(indata)
-annCol.wt.gaby.genomic.alter$ERV <- erv.group.gaby[rownames(annCol.wt.gaby.genomic.alter)]
-annColors.wt.gaby.genomic.alter[["ERV"]] <- c("ERV-C1" = orange,"ERV-C2" = green)
-dds <- DESeq2::DESeqDataSetFromMatrix(countData = erv.count[,names(erv.group.gaby)],
-                                      colData = data.frame(samID = names(erv.group.gaby),
-                                                           erv = as.character(erv.group.gaby),
-                                                           row.names = names(erv.group.gaby)),
-                                      design = as.formula("~ erv"))
-
-dds$erv <- relevel(dds$erv,ref = "ERV-C1")
-
-dds <- DESeq(dds)
-res <- DESeq2::results(dds, contrast = c("erv","ERV-C1","ERV-C2"))
-resData <- as.data.frame(res[order(res$padj),])
-resData$id <- rownames(resData)
-resData <- resData[,c("id","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj")]
-colnames(resData) <- c("id","baseMean","log2fc","lfcSE","stat","pvalue","padj")
-resData$fc <- 2^resData$log2fc
-resData <- resData[,c("id","fc","log2fc","pvalue","padj")]
-resData <- cbind.data.frame(resData,erv.anno[rownames(resData),])
-write.table(resData,file.path(res.path,"deseq2 results between gaby ERV 2 groups using all features.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-resData <- read.table(file.path(res.path,"deseq2 results between gaby ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-plotdata <- standarize.fun(log2(erv.normcount[,colnames(gaby.wt)] + 1)[rownames(resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(1.5)),]),], halfwidth = 2)
-hcg <- hclust(distanceMatrix(as.matrix(t(plotdata)), "euclidean"), "ward.D")
-p <- pheatmap(as.matrix(plotdata),
-         cluster_rows = hcg,
-         cluster_cols = hcs,
-         border_color = NA,
-         annotation_col = annCol.wt.gaby.genomic.alter[,c("ERV","RNA_Clust","Histology","OS","TP53 mutations","TP53 STATUS")],
-         annotation_colors = annColors.wt.gaby.genomic.alter[c("ERV","RNA_Clust","Histology","OS","TP53 mutations","TP53 STATUS")],
-         color = NMF:::ccRamp(x = heatmap.GrWtRd,n = 64),
-         # color = viridisLite::inferno(64),
-         # color = viridisLite::viridis(64),
-         # color = greenred(64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         cellwidth = 12,
-         cellheight = 1.6,
-         show_colnames = T,
-         show_rownames = F,
-         #cutree_cols = 2,
-         fontsize_col = 8)
-pdf(file.path(fig.path, "unsupervised clustering of ERVs in gaby wilms tumors.pdf"), height=12,width = 10)
-draw(p, annotation_legend_side = "left")
-invisible(dev.off())
-
-fisher.test(table(annCol.wt.gaby.genomic.alter$RNA_Clust,annCol.wt.gaby.genomic.alter$ERV)) # p = 0.04762
-# ERV-C1 ERV-C2
-# TP53_Mutated      0      5
-# TP53_Wild         4      1
-
-# unsupervised clustering using TARGET wilms ERV
-indata <- log2(erv.normcount[,colnames(target.wt)] + 1)
-#var <- apply(indata, 1, mad)
-#sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-#sel_gene <- var[var > quantile(var,probs = seq(0,1,0.25))[4]]
-#sel_gene <- sort(var,decreasing = T)[1:200]
-indata <- indata[names(sel_gene),]
-hcs <- hclust(distanceMatrix(as.matrix(indata), "pearson"), "ward.D")
-
-erv.group.target <- cutree(hcs, 2)
-erv.group.target <- ifelse(erv.group.target == 1,2,1)
-erv.group.target <- paste0("ERV-C",erv.group.target); names(erv.group.target) <- colnames(indata)
-annCol.target114$ERV <- erv.group.target[rownames(annCol.target114)]
-annColors.target114[["ERV"]] <- c("ERV-C1" = orange,"ERV-C2" = green)
-dds <- DESeq2::DESeqDataSetFromMatrix(countData = erv.count[,names(erv.group.target)],
-                                      colData = data.frame(samID = names(erv.group.target),
-                                                           erv = as.character(erv.group.target),
-                                                           row.names = names(erv.group.target)),
-                                      design = as.formula("~ erv"))
-
-dds$erv <- relevel(dds$erv,ref = "ERV-C1")
-dds <- DESeq(dds)
-res <- DESeq2::results(dds, contrast = c("erv","ERV-C1","ERV-C2"))
-resData <- as.data.frame(res[order(res$padj),])
-resData$id <- rownames(resData)
-resData <- resData[,c("id","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj")]
-colnames(resData) <- c("id","baseMean","log2fc","lfcSE","stat","pvalue","padj")
-resData$fc <- 2^resData$log2fc
-resData <- resData[,c("id","fc","log2fc","pvalue","padj")]
-resData <- cbind.data.frame(resData,erv.anno[rownames(resData),])
-write.table(resData,file.path(res.path,"deseq2 results between target ERV 2 groups using all features.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-plotdata <- standarize.fun(log2(erv.normcount[,colnames(target.wt)] + 1)[rownames(resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(1.5)),]),], halfwidth = 2)
-hcg <- hclust(distanceMatrix(as.matrix(t(plotdata)), "pearson"), "ward.D")
-p <- pheatmap(as.matrix(plotdata),
-              cluster_rows = hcg,
-              cluster_cols = hcs,
-              border_color = NA,
-              annotation_col =  annCol.target114[colnames(plotdata),c(49,40,4,34,1)],
-              annotation_colors = annColors.target114[colnames(annCol.target114)[c(49,40,4,34,1)]],
-              color = NMF:::ccRamp(x = heatmap.GrWtRd,n = 64),
-              # color = viridisLite::inferno(64),
-              # color = viridisLite::viridis(64),
-              # color = greenred(64),
-              treeheight_row = 15,
-              treeheight_col = 15,
-              cellwidth = 5,
-              cellheight = 0.8,
-              show_colnames = F,
-              show_rownames = F,
-              cutree_cols = 2,
-              fontsize_col = 8)
-pdf(file.path(fig.path, "unsupervised clustering of ERVs in target wilms tumors.pdf"), height=12,width = 10)
-draw(p, annotation_legend_side = "left")
-invisible(dev.off())
-
-fisher.test(table(annCol.target114$tune_Clust,annCol.target114$ERV)) # p = 0.0328
-# ERV-C1 ERV-C2
-# C1     30     39
-# C2      5     22
-
-# supervised clustering
-resData <- read.table(file.path(res.path,"deseq2 results between gaby ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-tmp1 <- resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(1.5)),]
-resData <- read.table(file.path(res.path,"deseq2 results between target ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-tmp2 <- resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(1.5)),]
-intersect(rownames(tmp1),rownames(tmp2))
-indata <- log2(erv.normcount[rownames(tmp1),colnames(target.wt)] + 1)
-hcs <- hclust(distanceMatrix(as.matrix(indata), "pearson"), "ward.D")
-erv.group.target2 <- cutree(hcs, 2)
-erv.group.target2 <- paste0("ERV-C",erv.group.target2); names(erv.group.target2) <- colnames(indata)
-annCol.target114$ERV2 <- erv.group.target2[rownames(annCol.target114)]
-annColors.target114[["ERV2"]] <- c("ERV-C1" = orange,"ERV-C2" = green)
-dds <- DESeq2::DESeqDataSetFromMatrix(countData = erv.count[,names(erv.group.target2)],
-                                      colData = data.frame(samID = names(erv.group.target2),
-                                                           erv = as.character(erv.group.target2),
-                                                           row.names = names(erv.group.target2)),
-                                      design = as.formula("~ erv"))
-
-dds$erv <- relevel(dds$erv,ref = "ERV-C1")
-dds <- DESeq(dds)
-res <- DESeq2::results(dds, contrast = c("erv","ERV-C1","ERV-C2"))
-resData <- as.data.frame(res[order(res$padj),])
-resData$id <- rownames(resData)
-resData <- resData[,c("id","baseMean","log2FoldChange","lfcSE","stat","pvalue","padj")]
-colnames(resData) <- c("id","baseMean","log2fc","lfcSE","stat","pvalue","padj")
-resData$fc <- 2^resData$log2fc
-resData <- resData[,c("id","fc","log2fc","pvalue","padj")]
-resData <- cbind.data.frame(resData,erv.anno[rownames(resData),])
-write.table(resData,file.path(res.path,"deseq2 results between supervised target ERV 2 groups using all features.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-#plotdata <- standarize.fun(log2(erv.normcount[rownames(tmp1),colnames(target.wt)] + 1), halfwidth = 2)
-resData <- read.table(file.path(res.path,"deseq2 results between supervised target ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-plotdata <- standarize.fun(log2(erv.normcount[,colnames(target.wt)] + 1)[rownames(resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(2)),]),], halfwidth = 2)
-
-hcg <- hclust(distanceMatrix(as.matrix(t(plotdata)), "euclidean"), "ward.D")
-p <- pheatmap(as.matrix(plotdata),
-              cluster_rows = hcg,
-              cluster_cols = dendsort(hcs),
-              border_color = NA,
-              annotation_col =  annCol.target114[colnames(plotdata),c(50,40,4,34,1)],
-              annotation_colors = annColors.target114[colnames(annCol.target114)[c(50,40,4,34,1)]],
-               color = NMF:::ccRamp(x = heatmap.GrWtRd,n = 64),
-              # color = viridisLite::inferno(64),
-              #color = viridisLite::viridis(64),
-              # color = greenred(64),
-              treeheight_row = 15,
-              treeheight_col = 15,
-              cellwidth = 3.2,
-              cellheight = 2.5,
-              show_colnames = F,
-              show_rownames = F,
-              cutree_cols = 2,
-              fontsize_col = 8)
-pdf(file.path(fig.path, "supervised clustering of ERVs in target wilms tumors.pdf"), height=12,width = 10)
-draw(p, annotation_legend_side = "left")
-invisible(dev.off())
-fisher.test(table(annCol.target114$tune_Clust,annCol.target114$ERV2)) # p = 0.0008588
-# ERV-C1 ERV-C2
-# C1     50     19
-# C2      9     18
-
-# generateInputFileForSubMap <- function(in_gct, gct_file, cls_file, sam_info, type_name = "type"){
-#   in_gct <- data.frame(GeneID=rownames(in_gct),
-#                        description="na",
-#                        in_gct, 
-#                        stringsAsFactors = F,
-#                        check.names = F)
-#   cat("#1.2\n", file = gct_file)
-#   cat(nrow(in_gct),"\t",ncol(in_gct)-2,"\n", file = gct_file, append = T)
-#   cat(paste(colnames(in_gct), collapse = "\t"),"\n", file = gct_file, append = T)
-#   for(i in 1:nrow(in_gct)) cat(paste(in_gct[i,], collapse = "\t"),"\n", file = gct_file, append = T)
-#   
-#   cat(nrow(sam_info),length(levels(factor(sam_info$rank))),1, "\n", file = cls_file )
-#   cat("#", paste0(levels(factor(sam_info[, type_name])), collapse = " " ), "\n", file = cls_file, sep = "", append = T)
-#   cat(as.numeric(factor(sam_info[, type_name])), file = cls_file, append = T)
-# }
-# 
-# ann <- data.frame(ERV = annCol.wt.gaby.genomic.alter$ERV,
-#                   row.names = rownames(annCol.wt.gaby.genomic.alter))
-# samples.C1 <- rownames(ann[which(ann$ERV == "ERV-C1"),,drop = F])
-# samples.C2 <- rownames(ann[which(ann$ERV == "ERV-C2"),,drop = F])
-# sam_info <- data.frame("ERV"=c(samples.C1,samples.C2),row.names = c(samples.C1,samples.C2))
-# sam_info$rank <- rep(c(1,2),times=c(length(samples.C1),length(samples.C2))) #1: HRisk 2: LRisk
-# tmp <- log2(erv.normcount[names(sel_gene),rownames(sam_info)] + 1)
-# gct_file <- file.path(res.path,"gaby.erv.for.SubMap.gct")
-# cls_file <- file.path(res.path,"gaby.erv.for.SubMap.cls")
-# in_gct <- tmp[,rownames(sam_info)]
-# generateInputFileForSubMap(in_gct = in_gct, gct_file = gct_file, cls_file = cls_file, sam_info = sam_info, type_name = "rank")
-# 
-# ann <- data.frame(ERV = annCol.target114$ERV,
-#                   row.names = rownames(annCol.target114))
-# samples.C1 <- rownames(ann[which(ann$ERV == "ERV-C1"),,drop = F])
-# samples.C2 <- rownames(ann[which(ann$ERV == "ERV-C2"),,drop = F])
-# sam_info <- data.frame("ERV"=c(samples.C1,samples.C2),row.names = c(samples.C1,samples.C2))
-# sam_info$rank <- rep(c(1,2),times=c(length(samples.C1),length(samples.C2))) #1: HRisk 2: LRisk
-# tmp <- log2(erv.normcount[names(sel_gene),rownames(sam_info)] + 1)
-# gct_file <- file.path(res.path,"target.erv.for.SubMap.gct")
-# cls_file <- file.path(res.path,"target.erv.for.SubMap.cls")
-# in_gct <- tmp[,rownames(sam_info)]
-# generateInputFileForSubMap(in_gct = in_gct, gct_file = gct_file, cls_file = cls_file, sam_info = sam_info, type_name = "rank")
-
-# volcano plot
-
-resData <- read.table(file.path(res.path,"deseq2 results between gaby ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-x <- resData
-plot_mode <- "advanced" 
-
-logFCcut <- log2(1.5) #log2-foldchange
-adjPcut <- 0.05 #adj.P.value
-
-xmin <- (range(x$log2fc)[1]- (range(x$log2fc)[1]+ 10))
-xmax <- (range(x$log2fc)[1]+ (10-range(x$log2fc)[1]))
-ymin <- 0
-ymax <- 10
-
-# setting for size
-n1 <- length(x[, 1])
-size <- rep(2, n1)
-cols <- rep("grey30", n1)
-names(cols)<- rownames(x)
-
-cols[x$padj < adjPcut & x$log2fc >logFCcut]<- "#FB9A99"
-cols[x$padj < adjPcut & x$log2fc > 1]<- "#ED4F4F"
-cols[x$padj < adjPcut & x$log2fc < -logFCcut]<- "#B2DF8A"
-cols[x$padj < adjPcut & x$log2fc < -1]<- "#329E3F"
-color_transparent <- adjustcolor(cols, alpha.f = 0.8)
-x$color_transparent <- color_transparent
-size[x$padj < adjPcut & x$log2fc > logFCcut]<- 4
-size[x$padj < adjPcut & x$log2fc > 1]<- 6
-size[x$padj < adjPcut & x$log2fc < -logFCcut]<- 4
-size[x$padj < adjPcut & x$log2fc < -1]<- 6
-
-# Construct the plot object
-p1 <- ggplot(data=x, aes(log2fc, -log10(padj))) +
-  geom_point(alpha = 0.6, size = size, colour = x$color_transparent) +
-  
-  labs(x="log2FoldChange", y="-log10FDR", title="") + 
-  ylim(c(ymin,ymax)) + 
-  scale_x_continuous(
-    breaks = c(-3, -2,-1, 0, 1, 2,3), 
-    labels = c(-3, -2,-1, 0, 1, 2,3),
-    limits = c(-3, 3)
-  ) +
-
-  geom_vline(xintercept = c(-1,-logFCcut, logFCcut,1), color="grey40", 
-             linetype="longdash", lwd = 0.5) + 
-  geom_hline(yintercept = -log10(adjPcut), color="grey40", 
-             linetype="longdash", lwd = 0.5) +
-  
-  theme_bw(base_size = 12#, base_family = "Times" 
-  ) +
-  theme(panel.grid=element_blank(),
-        axis.text = element_text(size = 12, color = "black"))
-
-p1
-ggsave(file.path(fig.path,"volcano plot of differential erv in gaby cohort.pdf"), width = 4,height = 4)
-
-resData <- read.table(file.path(res.path,"deseq2 results between supervised target ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-x <- resData
-# setting for size
-n1 <- length(x[, 1])
-size <- rep(2, n1)
-cols <- rep("grey30", n1)
-names(cols)<- rownames(x)
-
-cols[x$padj < adjPcut & x$log2fc >logFCcut]<- "#FB9A99"
-cols[x$padj < adjPcut & x$log2fc > 1]<- "#ED4F4F"
-cols[x$padj < adjPcut & x$log2fc < -logFCcut]<- "#B2DF8A"
-cols[x$padj < adjPcut & x$log2fc < -1]<- "#329E3F"
-color_transparent <- adjustcolor(cols, alpha.f = 0.8)
-x$color_transparent <- color_transparent
-size[x$padj < adjPcut & x$log2fc > logFCcut]<- 4
-size[x$padj < adjPcut & x$log2fc > 1]<- 6
-size[x$padj < adjPcut & x$log2fc < -logFCcut]<- 4
-size[x$padj < adjPcut & x$log2fc < -1]<- 6
-
-# Construct the plot object
-p1 <- ggplot(data=x, aes(log2fc, -log10(padj))) +
-  geom_point(alpha = 0.6, size = size, colour = x$color_transparent) +
-  
-  labs(x="log2FoldChange", y="-log10FDR", title="") + 
-  ylim(c(ymin,ymax)) + 
-  scale_x_continuous(
-    breaks = c(-2, -1, 0, 1, 2),
-    labels = c(-2, -1, 0, 1, 2),
-    limits = c(-2, 2)
-  ) +
-  
-  geom_vline(xintercept = c(-1,-logFCcut, logFCcut,1), color="grey40", 
-             linetype="longdash", lwd = 0.5) + 
-  geom_hline(yintercept = -log10(pvalCut), color="grey40", 
-             linetype="longdash", lwd = 0.5) +
-  
-  theme_bw(base_size = 12#, base_family = "Times" 
-  ) +
-  theme(panel.grid=element_blank(),
-        axis.text = element_text(size = 12, color = "black"))
-
-p1
-ggsave(file.path(fig.path,"volcano plot of differential erv in target cohort.pdf"), width = 4,height = 4)
-
-
 #---------------------------#
 # cell lines from preprints #
 gse156065.path <- file.path(data.path,"GSE156065_RAW")
@@ -7415,36 +5795,36 @@ tmp11 <- read.delim(file.path(gse156065.path,"GSM4721834_KT18_PDX.genes.resort.r
 tmp12 <- read.delim(file.path(gse156065.path,"GSM4721835_Wit49.genes.resort.results.txt"),sep = "\t",row.names = NULL,header = T,check.names = F,stringsAsFactors = F)
 
 tmp1$gene <- sapply(strsplit(tmp1$gene_id,"_",fixed = T),"[",2)
-tmp1 <- as.data.frame(apply(tmp1[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp1$gene), FUN=max, na.rm=TRUE)))
+tmp1 <- as.data.frame(apply(tmp1[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp1$gene), FUN=max, na.rm=TRUE)))
 
 tmp2$gene <- sapply(strsplit(tmp2$gene_id,"_",fixed = T),"[",2)
-tmp2 <- as.data.frame(apply(tmp2[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp2$gene), FUN=max, na.rm=TRUE)))
+tmp2 <- as.data.frame(apply(tmp2[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp2$gene), FUN=max, na.rm=TRUE)))
 
 tmp3$gene <- sapply(strsplit(tmp3$gene_id,"_",fixed = T),"[",2)
-tmp3 <- as.data.frame(apply(tmp3[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp3$gene), FUN=max, na.rm=TRUE)))
+tmp3 <- as.data.frame(apply(tmp3[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp3$gene), FUN=max, na.rm=TRUE)))
 
 tmp4$gene <- sapply(strsplit(tmp4$gene_id,"_",fixed = T),"[",2)
-tmp4 <- as.data.frame(apply(tmp4[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp4$gene), FUN=max, na.rm=TRUE)))
+tmp4 <- as.data.frame(apply(tmp4[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp4$gene), FUN=max, na.rm=TRUE)))
 
 tmp5$gene <- sapply(strsplit(tmp5$gene_id,"_",fixed = T),"[",2)
-tmp5 <- as.data.frame(apply(tmp5[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp5$gene), FUN=max, na.rm=TRUE)))
+tmp5 <- as.data.frame(apply(tmp5[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp5$gene), FUN=max, na.rm=TRUE)))
 
-tmp6 <- as.data.frame(apply(tmp6[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp6$Gene_Name), FUN=max, na.rm=TRUE)))
+tmp6 <- as.data.frame(apply(tmp6[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp6$Gene_Name), FUN=max, na.rm=TRUE)))
 
-tmp7 <- as.data.frame(apply(tmp7[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp7$Gene_Name), FUN=max, na.rm=TRUE)))
+tmp7 <- as.data.frame(apply(tmp7[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp7$Gene_Name), FUN=max, na.rm=TRUE)))
 
 tmp8$gene <- sapply(strsplit(tmp8$gene_id,"_",fixed = T),"[",2)
-tmp8 <- as.data.frame(apply(tmp8[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp8$gene), FUN=max, na.rm=TRUE)))
+tmp8 <- as.data.frame(apply(tmp8[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp8$gene), FUN=max, na.rm=TRUE)))
 
 tmp9$gene <- sapply(strsplit(tmp9$gene_id,"_",fixed = T),"[",2)
-tmp9 <- as.data.frame(apply(tmp9[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp9$gene), FUN=max, na.rm=TRUE)))
+tmp9 <- as.data.frame(apply(tmp9[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp9$gene), FUN=max, na.rm=TRUE)))
 
-tmp10 <- as.data.frame(apply(tmp10[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp10$Gene_Name), FUN=max, na.rm=TRUE)))
+tmp10 <- as.data.frame(apply(tmp10[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp10$Gene_Name), FUN=max, na.rm=TRUE)))
 
-tmp11 <- as.data.frame(apply(tmp11[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp11$Gene_Name), FUN=max, na.rm=TRUE)))
+tmp11 <- as.data.frame(apply(tmp11[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp11$Gene_Name), FUN=max, na.rm=TRUE)))
 
 tmp12$gene <- sapply(strsplit(tmp12$gene_id,"_",fixed = T),"[",2)
-tmp12 <- as.data.frame(apply(tmp12[,c("TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp12$gene), FUN=max, na.rm=TRUE)))
+tmp12 <- as.data.frame(apply(tmp12[,c("expected_count","TPM","FPKM")], 2, function(x) tapply(x, INDEX=factor(tmp12$gene), FUN=max, na.rm=TRUE)))
 
 comgene.ccl <- intersect(rownames(tmp1),rownames(tmp2))
 comgene.ccl <- intersect(comgene.ccl,rownames(tmp3))
@@ -7457,6 +5837,23 @@ comgene.ccl <- intersect(comgene.ccl,rownames(tmp9))
 comgene.ccl <- intersect(comgene.ccl,rownames(tmp10))
 comgene.ccl <- intersect(comgene.ccl,rownames(tmp11))
 comgene.ccl <- intersect(comgene.ccl,rownames(tmp12))
+
+ccle.wt.ct <- data.frame("COG-W-408" = tmp1[comgene.ccl,"expected_count"],
+                      "17.94" = tmp2[comgene.ccl,"expected_count"],
+                      "PCB-00007" = tmp3[comgene.ccl,"expected_count"],
+                      "CF-00108" = tmp4[comgene.ccl,"expected_count"],
+                      "CF-00136" = tmp5[comgene.ccl,"expected_count"],
+                      "CF-00333" = tmp6[comgene.ccl,"expected_count"],
+                      "IM-WT-10" = tmp7[comgene.ccl,"expected_count"],
+                      "IM-WT-1" = tmp8[comgene.ccl,"expected_count"],
+                      "IM-WT-6" = tmp9[comgene.ccl,"expected_count"],
+                      "KT-13" = tmp10[comgene.ccl,"expected_count"],
+                      "KT-18" = tmp11[comgene.ccl,"expected_count"],
+                      "Wit49" = tmp12[comgene.ccl,"expected_count"],
+                      check.names = F,
+                      row.names = comgene.ccl,
+                      stringsAsFactors = F)
+ccle.wt.ct <- as.data.frame(round(ccle.wt.ct,0))
 
 ccle.wt <- data.frame("COG-W-408" = tmp1[comgene.ccl,"TPM"],
                       "17.94" = tmp2[comgene.ccl,"TPM"],
@@ -7564,9 +5961,6 @@ p1 <- pheatmap(as.matrix(plotdata),
               cutree_cols = 2,
               fontsize_col = 9)
 p1
-# pdf(file.path(fig.path, "supervised clustering using msigdb pathways on wilms tumors in ccle cohort before combat.pdf"), height=6,width = 10)
-# draw(p, annotation_legend_side = "bottom", heatmap_legend_side = "left")
-# invisible(dev.off())
 
 # clustering using pathway genes
 outTab <- NULL
@@ -7619,10 +6013,6 @@ p2 <- pheatmap(as.matrix(plotdata),
               border_color = "black",
               annotation_row = annRow,
               annotation_colors = annColors.ccle["class"],
-              #color = NMF:::ccRamp(x = heatmap.L.BlYlRd,n = 64),
-              # color = viridisLite::inferno(64),
-              #color = viridisLite::viridis(64),
-              # color = greenred(64),
               color = colorpanel(64,low=blue,mid = "black",high=gold),
               treeheight_row = 15,
               treeheight_col = 15,
@@ -7678,7 +6068,6 @@ par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "",
         ylab = "EZH2 targets\nssGSEA score",
-        #ylim = c(1,5),
         outline = F,
         col = ggplot2::alpha(jco[2:1],0.7))
 stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
@@ -7687,7 +6076,6 @@ text(1.5,1.1,"P = 0.008",cex = 1)
 invisible(dev.off())
 
 # supervised clustering using RS signature
-## keep batch
 HRS.score.ccle <- gsva(as.matrix(ccle.wt),
                        HRS.signature,
                        method = "ssgsea")
@@ -7702,10 +6090,7 @@ p <- pheatmap(as.matrix(plotdata),
               border_color = "black",
               annotation_col = annCol.ccle[,c("HRS","TME","Histology","Age","Sex","Model_Type")],
               annotation_colors = annColors.ccle[c("HRS","TME","Histology","Age","Sex","Model_Type")],
-              #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-              # color = viridisLite::inferno(64),
               color = viridisLite::viridis(64),
-              # color = greenred(64),
               treeheight_row = 15,
               treeheight_col = 15,
               cellwidth = 15,
@@ -7720,67 +6105,6 @@ invisible(dev.off())
 
 table(annCol.ccle$TME,annCol.ccle$HRS)
 fisher.test(table(annCol.ccle$TME,annCol.ccle$HRS)) # 0.01
-# # remove batch
-# HRS.score.ccle <- gsva(as.matrix(ccle.wt.combat),
-#                        HRS.signature,
-#                        method = "ssgsea")
-# hcs <- hclust(distanceMatrix(as.matrix(HRS.score.ccle[,rownames(annCol.ccle)]), "euclidean"), "ward.D")
-# HRS.group.ccle <- cutree(hcs, k =2)
-# annCol.ccle$HRS <- ifelse(HRS.group.ccle[rownames(annCol.ccle)] == 1,"RS-Low","RS-High")
-# annColors.ccle[["HRS"]] <- c("RS-Low" = "#4558A3","RS-High" = "#C86C0D")
-# plotdata <- standarize.fun(HRS.score.ccle[,rownames(annCol.ccle)],halfwidth = 1)
-# p <- pheatmap(as.matrix(plotdata),
-#               cluster_rows = F,
-#               cluster_cols = hcs,
-#               border_color = "black",
-#               annotation_col = annCol.ccle[,c("HRS","Histology","Age","Sex","Model_Type")],
-#               annotation_colors = annColors.ccle[c("HRS","Histology","Age","Sex","Model_Type")],
-#               #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-#               # color = viridisLite::inferno(64),
-#               color = viridisLite::viridis(64),
-#               # color = greenred(64),
-#               treeheight_row = 15,
-#               treeheight_col = 15,
-#               cellwidth = 15,
-#               cellheight = 10,
-#               show_colnames = T,
-#               show_rownames = T,
-#               cutree_cols = 2,
-#               fontsize_col = 9)
-# pdf(file.path(fig.path, "HRS signature heatmap of wilms tumors in ccle cohort after combat.pdf"), height=8,width = 15)
-# draw(p, annotation_legend_side = "bottom", heatmap_legend_side = "left")
-# invisible(dev.off())
-# 
-# # use cell lines only
-# HRS.score.ccle <- gsva(as.matrix(ccle.wt[,rownames(annCol.ccle2)]),
-#                        HRS.signature,
-#                        method = "ssgsea")
-# hcs <- hclust(distanceMatrix(as.matrix(HRS.score.ccle[,rownames(annCol.ccle2)]), "spearman"), "ward.D")
-# HRS.group.ccle <- cutree(hcs, k =2)
-# annCol.ccle2$HRS <- ifelse(HRS.group.ccle[rownames(annCol.ccle2)] == 1,"RS-Low","RS-High")
-# annColors.ccle[["HRS"]] <- c("RS-Low" = "#4558A3","RS-High" = "#C86C0D")
-# plotdata <- standarize.fun(HRS.score.ccle[,rownames(annCol.ccle2)],halfwidth = 1.5)
-# p <- pheatmap(as.matrix(plotdata),
-#               cluster_rows = F,
-#               cluster_cols = hcs,
-#               border_color = "black",
-#               annotation_col = annCol.ccle2[,c("HRS","Histology","Age","Sex","Model_Type")],
-#               annotation_colors = annColors.ccle[c("HRS","Histology","Age","Sex","Model_Type")],
-#               #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-#               # color = viridisLite::inferno(64),
-#               color = viridisLite::viridis(64),
-#               #color = greenred(64),
-#               treeheight_row = 15,
-#               treeheight_col = 15,
-#               cellwidth = 15,
-#               cellheight = 10,
-#               show_colnames = T,
-#               show_rownames = T,
-#               cutree_cols = 2,
-#               fontsize_col = 9)
-# pdf(file.path(fig.path, "HRS signature heatmap of wilms tumors in ccle cohort use cell lines only.pdf"), height=8,width = 15)
-# draw(p, annotation_legend_side = "bottom", heatmap_legend_side = "left")
-# invisible(dev.off())
 
 # drug sensitivity
 trainExpr <- gdsc.expr
@@ -7794,10 +6118,9 @@ comgene <- intersect(rownames(trainExpr),rownames(testExpr))
 trainExpr <- as.matrix(trainExpr[comgene,])
 testExpr <- testExpr[comgene,]
 outTab <- NULL
-for (i in 1:ncol(trainPtype)) { # 
+for (i in 1:ncol(trainPtype)) {
   display.progress(index = i,totalN = ncol(trainPtype))
   d <- colnames(trainPtype)[i]
-  #tmp <- log2(as.vector(trainPtype[,d]) + 0.00001) 
   tmp <- as.vector(trainPtype[,d])
   
   ptypeOut <- quiet(calcPhenotype(trainingExprData = as.matrix(trainExpr),
@@ -7849,8 +6172,8 @@ ctrp.ccl.anno <- read.delim(file.path(data.path,"CTRP_ccl_anno.txt"),sep = "\t",
 ctrp.cpd.anno <- read.delim(file.path(data.path,"CTRP_cpd_anno.txt"),sep = "\t",row.names = NULL,check.names = F,stringsAsFactors = F,header = T) # Supplementary Data Set 2
 
 ctrp.auc <- read.delim(file.path(data.path,"CTRP_AUC.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-prism.auc <- read.delim(file.path(data.path,"PRISM_AUC.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T) # 鏁版嵁鏉ヨ嚜https://depmap.org/portal/download/ Drug sensitivity AUC (PRISM Repurposing Secondary Screen) 19Q4
-prism.ccl.anno <- prism.auc[,1:5] 
+prism.auc <- read.delim(file.path(data.path,"PRISM_AUC.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T) # 数据来自https://depmap.org/portal/download/ Drug sensitivity AUC (PRISM Repurposing Secondary Screen) 19Q4
+prism.ccl.anno <- prism.auc[,1:5]
 prism.auc <- prism.auc[,-c(1:5)]
 
 ctrp.auc <- ctrp.auc[,apply(ctrp.auc,2,function(x) sum(is.na(x))) < 0.2*nrow(ctrp.auc)]
@@ -7863,7 +6186,7 @@ ctrp.auc <- ctrp.auc[setdiff(rownames(ctrp.auc),rmccl),]
 ctrp.auc.knn <- impute.knn(as.matrix(ctrp.auc))$data
 prism.auc.knn <- impute.knn(as.matrix(prism.auc))$data
 
-ctrp.auc.knn <- ctrp.auc.knn/ceiling(max(ctrp.auc.knn)) # epression Levels of Therapeutic Targets as Indicators of Sensitivity to Targeted Therapeutics (2019, Molecular Cancer Therapeutics)
+ctrp.auc.knn <- ctrp.auc.knn/ceiling(max(ctrp.auc.knn))
 prism.auc.knn <- prism.auc.knn/ceiling(max(prism.auc.knn))
 
 ccl.expr <- read.table(file.path(data.path,"CCLE_RNAseq_rsem_genes_tpm_20180929.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T) 
@@ -7897,27 +6220,25 @@ ctrp.drug <- data.frame(
 
 
 ## CTRP
-# keepgene <- apply(ccl.expr, 1, mad) > 0.5 
-# trainExpr <- log2(ccl.expr[keepgene,] + 1)
 trainExpr <- log2(ccl.expr[comgene,] + 1)
 colnames(trainExpr) <- sapply(strsplit(colnames(trainExpr),"_",fixed = T),"[",1) 
 trainPtype <- as.data.frame(ctrp.auc.knn)
-ccl.name <- ccl.miss <- c() 
+ccl.name <- ccl.miss <- c()
 for (i in rownames(trainPtype)) {
   if(!is.element(gsub("CCL","",i),ctrp.ccl.anno$master_ccl_id)) {
     cat(i,"\n")
-    ccl.miss <- c(ccl.miss, i) 
-    ccl.name <- c(ccl.name, i) 
+    ccl.miss <- c(ccl.miss, i)
+    ccl.name <- c(ccl.name, i)
   } else {
-    ccl.name <- c(ccl.name,  ctrp.ccl.anno[which(ctrp.ccl.anno$master_ccl_id == gsub("CCL","",i)),"ccl_name"]) # 鎻掑叆鍖归厤鐨勭粏鑳炵郴
+    ccl.name <- c(ccl.name,  ctrp.ccl.anno[which(ctrp.ccl.anno$master_ccl_id == gsub("CCL","",i)),"ccl_name"])
   }
 }
 
-cpd.name <- cpd.miss <- c() 
+cpd.name <- cpd.miss <- c()
 for (i in colnames(trainPtype)) {
   if(!is.element(i,ctrp.cpd.anno$master_cpd_id)) {
     cat(i,"\n")
-    cpd.miss <- c(cpd.miss, i) 
+    cpd.miss <- c(cpd.miss, i)
     cpd.name <- c(cpd.name, i)
   } else {
     cpd.name <- c(cpd.name,  ctrp.cpd.anno[which(ctrp.cpd.anno$master_cpd_id == i),"cpd_name"]) 
@@ -7925,10 +6246,10 @@ for (i in colnames(trainPtype)) {
 }
 
 rownames(trainPtype) <- ccl.name
-trainPtype <- trainPtype[setdiff(rownames(trainPtype),ccl.miss),] 
+trainPtype <- trainPtype[setdiff(rownames(trainPtype),ccl.miss),]
 colnames(trainPtype) <- cpd.name
-trainPtype <- trainPtype[,setdiff(colnames(trainPtype),cpd.miss)] 
-comccl <- intersect(rownames(trainPtype),colnames(trainExpr)) 
+trainPtype <- trainPtype[,setdiff(colnames(trainPtype),cpd.miss)]
+comccl <- intersect(rownames(trainPtype),colnames(trainExpr))
 trainExpr <- trainExpr[,comccl]
 trainPtype <- trainPtype[comccl,intersect(ctrp.drug$drug,colnames(trainPtype))]
 
@@ -7937,7 +6258,7 @@ testExpr <- gaby.wt
 trainExpr <- as.matrix(trainExpr[comgene,])
 testExpr <- testExpr[comgene,]
 outTab <- NULL
-for (i in 1:ncol(trainPtype)) { 
+for (i in 1:ncol(trainPtype)) {
   display.progress(index = i,totalN = ncol(trainPtype))
   d <- colnames(trainPtype)[i]
   tmp <- log2(as.vector(trainPtype[,d]) + 0.001) 
@@ -7946,7 +6267,7 @@ for (i in 1:ncol(trainPtype)) {
                                   testExprData = as.matrix(testExpr),
                                   powerTransformPhenotype = F,
                                   selection = 1))
-  ptypeOut <- 2^ptypeOut - 0.001 
+  ptypeOut <- 2^ptypeOut - 0.001
   outTab <- rbind.data.frame(outTab,ptypeOut)
 }
 dimnames(outTab) <- list(colnames(trainPtype),colnames(testExpr))
@@ -8102,15 +6423,6 @@ outTab.HRS[which(outTab.HRS$p.HRS >= 0.05), "sensitivity"] <- ""
 write.table(outTab.TME,file.path(res.path,"CTRP selected drug sensitivity regarding TME in ccle cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
 write.table(outTab.HRS,file.path(res.path,"CTRP selected drug sensitivity regarding HRS in ccle cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
 
-# common in 7
-# BRD1835
-# panobinostat
-# BRD-K29313308
-# apicidin
-# entinostat
-# vorinostat
-# BRD-K85133207
-
 #----------------------------------------------------------#
 # copy number analysis to compare the chromosome landscape #
 ## Gaby cohort
@@ -8167,11 +6479,9 @@ seg$SRA_RUN <- matchID[match(seg$ID,rownames(matchID)),"SRA_RUN"]
 
 tmp1 <- seg[which(seg$SRA_RUN %in% RNA_Clust1.target),] # 67
 tmp2 <- seg[which(seg$SRA_RUN %in% RNA_Clust2.target),] # 27
-#tmp3 <- seg[which(seg$SRA_RUN %in% RNA_Clust3.target),] # 15
 
 tmp1$ID <- tmp1$SRA_RUN
 tmp2$ID <- tmp2$SRA_RUN
-#tmp3$ID <- tmp3$SRA_RUN
 
 Segment <- rbind.data.frame(tmp1,tmp2)
 Segment <- Segment[,1:6]
@@ -8215,7 +6525,6 @@ rm(a); rm(b); rm(c)
 
 #-------------------------------#
 # generate chromosome landscape #
-# Create a chromosomes reference objects function
 chrom_extract <- function(BSgenome.hg  = NULL) {
   if (is.null(BSgenome.hg )) stop("NULL object !", call. = FALSE)
   obj <- list(species = GenomeInfoDb::organism(BSgenome.hg), genomebuild = BSgenome::providerVersion(BSgenome.hg))
@@ -8494,9 +6803,6 @@ pheatmap(as.matrix(t(regulon.gaby.sel)),
          annotation_col = annCol.wt.gaby.genomic.alter[,c("RNA_Clust","Histology"),drop = F],
          annotation_colors = annColors.wt.gaby.genomic.alter[c("RNA_Clust","Histology")],
          color = NMF:::ccRamp(x = heatmap.L.BlYlRd,n = 64),
-         #color = viridisLite::inferno(64),
-         #color = viridisLite::viridis(64),
-         #color = colorpanel(64,low=blue,mid = "black",high=gold),
          treeheight_row = 15,
          treeheight_col = 15,
          cellwidth = 15,
@@ -8573,10 +6879,7 @@ p <- pheatmap(as.matrix(t(regulon.ccle.sel)),
               border_color = "black",
               annotation_col = annCol.ccle[,c("TME","Histology")],
               annotation_colors = annColors.ccle[c("TME","Histology")],
-              #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-              # color = viridisLite::inferno(64),
               color = NMF:::ccRamp(x = heatmap.L.BlYlRd,n = 64),
-              # color = greenred(64),
               treeheight_row = 15,
               treeheight_col = 15,
               cellwidth = 15,
@@ -8800,481 +7103,6 @@ stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
 text(1.5,-0.35,"P = 0.038",cex = 1)
 invisible(dev.off())
 
-#------------------------------------#
-# check GSEA results of MHC CLASS II #
-MSigDB.GOBP <- read.gmt(file.path(comAnn.path,"c5.go.bp.v7.4.symbols.gmt"))
-
-deres <- read.table(file.path(res.path,"Gaby_WT_mRNA_edgeR_test_result.TP53_Mutated_vs_TP53_Wild.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = 1)
-geneList <- deres$logFC
-names(geneList) <- deres$id
-geneList <- sort(geneList,decreasing = T)
-gsea_gaby_wt_tp53_mutvswild_gobp <- GSEA(geneList = geneList,
-                                    TERM2GENE=MSigDB.GOBP,
-                                    pvalueCutoff = 0.25,
-                                    nPerm = 10000,
-                                    seed = T,
-                                    verbose=F)
-res <- data.frame(gsea_gaby_wt_tp53_mutvswild_gobp)
-write.table(as.data.frame(gsea_gaby_wt_tp53_mutvswild_gobp),file.path(res.path,"GSEA GOBP results for Gaby WT mRNA TP53 MutatedvsWild DEGs.txt"),row.names = T,col.names = NA,sep = "\t",quote = F)
-
-deres <- read.table(file.path(res.path,"TARGET_WT_mRNA_edgeR_test_result.C2_vs_Others.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,row.names = 1)
-geneList <- deres$logFC
-names(geneList) <- deres$id
-geneList <- sort(geneList,decreasing = T)
-gsea_target_c2vsc1_gobp <- GSEA(geneList = geneList,
-                           TERM2GENE=MSigDB.GOBP,
-                           pvalueCutoff = 0.25,
-                           nPerm = 10000,
-                           seed = T,
-                           verbose=F)
-res <- data.frame(gsea_target_c2vsc1_gobp)
-write.table(as.data.frame(gsea_target_c2vsc1_gobp),file.path(res.path,"GSEA GOBP results for TARGET WT mRNA TP53 Mutated C2 vs Wild C1 DEGs.txt"),row.names = T,col.names = NA,sep = "\t",quote = F)
-
-# using limma
-pd <- data.frame(Samples = c(RNA_Clust2,RNA_Clust1),
-                 Group = rep(c("C2","C1"),c(length(RNA_Clust2),length(RNA_Clust1))),
-                 stringsAsFactors = FALSE)
-design <-model.matrix(~ -1 + factor(pd$Group, levels = c("C2","C1")))
-colnames(design) <- c("C2","C1")
-gset <- gaby.wt[,pd$Samples]
-fit <- limma::lmFit(gset, design = design);
-contrastsMatrix <- limma::makeContrasts(C2 - C1, levels = c("C2", "C1"))
-fit2 <- limma::contrasts.fit(fit, contrasts = contrastsMatrix)
-fit2 <- limma::eBayes(fit2, 0.01)
-resData <- limma::topTable(fit2, adjust = "fdr", sort.by = "B", number = 100000)
-resData <- as.data.frame(subset(resData, select=c("logFC","t","B","P.Value","adj.P.Val")))
-resData$id <- rownames(resData)
-colnames(resData) <- c("log2fc","t","B","pvalue","padj","id")
-resData$fc <- 2^resData$log2fc
-resData <- resData[order(resData$padj),c("id","fc","log2fc","pvalue","padj")]
-write.table(resData,file.path(res.path,"limma results between C2 and CS1 in gaby wt.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
-geneList <- resData$log2fc; names(geneList) <- resData$id
-geneList <- sort(geneList,decreasing = T)
-gsea_limma_gaby_wt_c2vsc1_gobp <- GSEA(geneList = geneList,
-                  TERM2GENE = MSigDB.GOBP,
-                  pvalueCutoff = 0.25,
-                  seed = T,
-                  verbose = F)
-write.csv(as.data.frame(gsea_limma_gaby_wt_c2vsc1_gobp),file.path(res.path,"gsea_limma_gaby_wt_c2vsc1_gobp.csv"),row.names = F,quote = F)
-
-pd <- data.frame(Samples = c(RNA_Clust2.target,RNA_Clust1.target),
-                 Group = rep(c("C2","C1"),c(length(RNA_Clust2.target),length(RNA_Clust1.target))),
-                 stringsAsFactors = FALSE)
-design <-model.matrix(~ -1 + factor(pd$Group, levels = c("C2","C1")))
-colnames(design) <- c("C2","C1")
-gset <- target.wt[,pd$Samples]
-fit <- limma::lmFit(gset, design = design);
-contrastsMatrix <- limma::makeContrasts(C2 - C1, levels = c("C2", "C1"))
-fit2 <- limma::contrasts.fit(fit, contrasts = contrastsMatrix)
-fit2 <- limma::eBayes(fit2, 0.01)
-resData <- limma::topTable(fit2, adjust = "fdr", sort.by = "B", number = 100000)
-resData <- as.data.frame(subset(resData, select=c("logFC","t","B","P.Value","adj.P.Val")))
-resData$id <- rownames(resData)
-colnames(resData) <- c("log2fc","t","B","pvalue","padj","id")
-resData$fc <- 2^resData$log2fc
-resData <- resData[order(resData$padj),c("id","fc","log2fc","pvalue","padj")]
-write.table(resData,file.path(res.path,"limma results between C2 and CS1 in target wt.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
-geneList <- resData$log2fc; names(geneList) <- resData$id
-geneList <- sort(geneList,decreasing = T)
-gsea_limma_target_wt_c2vsc1_gobp <- GSEA(geneList = geneList,
-                                       TERM2GENE = MSigDB.GOBP,
-                                       pvalueCutoff = 0.25,
-                                       seed = T,
-                                       verbose = F)
-write.csv(as.data.frame(gsea_limma_target_wt_c2vsc1_gobp),file.path(res.path,"gsea_limma_target_wt_c2vsc1_gobp.csv"),row.names = F,quote = F)
-
-pd <- data.frame(Samples = c(RNA_Clust2.ccle,RNA_Clust1.ccle),
-                 Group = rep(c("C2","C1"),c(length(RNA_Clust2.ccle),length(RNA_Clust1.ccle))),
-                 stringsAsFactors = FALSE)
-design <-model.matrix(~ -1 + factor(pd$Group, levels = c("C2","C1")))
-colnames(design) <- c("C2","C1")
-gset <- ccle.wt[,pd$Samples]
-fit <- limma::lmFit(gset, design = design);
-contrastsMatrix <- limma::makeContrasts(C2 - C1, levels = c("C2", "C1"))
-fit2 <- limma::contrasts.fit(fit, contrasts = contrastsMatrix)
-fit2 <- limma::eBayes(fit2, 0.01)
-resData <- limma::topTable(fit2, adjust = "fdr", sort.by = "B", number = 100000)
-resData <- as.data.frame(subset(resData, select=c("logFC","t","B","P.Value","adj.P.Val")))
-resData$id <- rownames(resData)
-colnames(resData) <- c("log2fc","t","B","pvalue","padj","id")
-resData$fc <- 2^resData$log2fc
-resData <- resData[order(resData$padj),c("id","fc","log2fc","pvalue","padj")]
-write.table(resData,file.path(res.path,"limma results between C2 and CS1 in ccle wt.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
-geneList <- resData$log2fc; names(geneList) <- resData$id
-geneList <- sort(geneList,decreasing = T)
-gsea_limma_ccle_wt_c2vsc1_gobp <- GSEA(geneList = geneList,
-                                         TERM2GENE = MSigDB.GOBP,
-                                         pvalueCutoff = 0.25,
-                                         seed = T,
-                                         verbose = F)
-write.csv(as.data.frame(gsea_limma_ccle_wt_c2vsc1_gobp),file.path(res.path,"gsea_limma_ccle_wt_c2vsc1_gobp.csv"),row.names = F,quote = F)
-
-gseaplot(x = gsea_limma_gaby_wt_c2vsc1_gobp,
-         geneSetID = "GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION_OF_PEPTIDE_ANTIGEN_VIA_MHC_CLASS_I")
-gseaplot2(x = gsea_limma_gaby_wt_c2vsc1_gobp,
-          pvalue_table = F,
-          subplots = 1:3,
-          color = "darkgreen",
-         geneSetID = "GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION_OF_PEPTIDE_ANTIGEN_VIA_MHC_CLASS_I")
-ggsave(file.path(fig.path,"gsea plot of MHC_CLASS_I in gaby cohort.pdf"), width = 4.5,height = 4.2)
-
-gseaplot2(x = gsea_limma_target_wt_c2vsc1_gobp,
-          pvalue_table = F,
-          subplots = 1:3,
-          color = "darkgreen",
-          geneSetID = "GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION_OF_PEPTIDE_ANTIGEN_VIA_MHC_CLASS_I")
-ggsave(file.path(fig.path,"gsea plot of MHC_CLASS_I in target cohort.pdf"), width = 4.5,height = 4.2)
-
-gseaplot2(x = gsea_limma_ccle_wt_c2vsc1_gobp,
-          pvalue_table = F,
-          subplots = 1:3,
-          color = "darkgreen",
-          geneSetID = "GOBP_ANTIGEN_PROCESSING_AND_PRESENTATION_OF_PEPTIDE_ANTIGEN_VIA_MHC_CLASS_I")
-ggsave(file.path(fig.path,"gsea plot of MHC_CLASS_I in ccle cohort.pdf"), width = 4.5,height = 4.2)
-
-#-----------------------------------------------------#
-# check association between EZH2 and MHC2 class genes #
-mycol <- alpha(c("#8CCDEB","#ECBE51","#D9CBE0","#EF6466","#5FC1C2"),0.7)
-mycol2 <- c("#8CCDEB","#ECBE51","#D9CBE0","#EF6466","#5FC1C2")
-tmp <- as.data.frame(t(gaby.wt[c("EZH2","B2M","HLA-A","HLA-B","HLA-C","HLA-E"),]))
-tmp <- as.data.frame(scale(tmp))
-cor.test(tmp$EZH2,tmp$B2M,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-A`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-B`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-C`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-E`,method = "pearson")
-
-pdf(file.path(fig.path,"scatter plot of EZH2 with MHC I genes in gaby wt.pdf"), width = 6, height = 6)
-par(bty="o", mgp = c(2,0.5,0), mar = c(3.1,4.1,2.1,2.1),tcl=-.25, xpd = F, las = 1)
-plot(NULL, NULL, ylim = c(-1.5,2.5), xlim = c(-1.5,1.5), 
-     xlab = "EZH2 expression level [z-scored]", ylab = "MHC class I genes\n[z-scored]",col="white",
-     main = "")
-rect(par("usr")[1], 
-     par("usr")[3],
-     par("usr")[2],
-     par("usr")[4],
-     col = "white",
-     border = F)
-grid(col = "grey90", lty = 2, lwd = 1.5) 
-
-points(tmp$EZH2,tmp$B2M,col = mycol[1], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-A`,col = mycol[2], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-B`,col = mycol[3], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-C`,col = mycol[4], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-E`,col = mycol[5], pch = 19, cex = 2)
-
-box(col = "black")
-
-legend("topright",
-       legend = c("B2M: r=-0.77, p<0.01",
-                  "HLA-A: r=-0.43, p=0.11",
-                  "HLA-B: r=-0.30, p=0.20",
-                  "HLA-C: r=-0.37, p=0.15",
-                  "HLA-E: r=0.33, p=0.35"),
-       text.col = mycol2,
-       cex = 1.2,
-       bty = "n")
-invisible(dev.off())
-
-tmp <- as.data.frame(t(target.wt[c("EZH2","B2M","HLA-A","HLA-B","HLA-C","HLA-E"),]))
-tmp <- as.data.frame(scale(tmp))
-cor.test(tmp$EZH2,tmp$B2M,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-A`,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-B`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-C`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2,tmp$`HLA-E`,method = "pearson")
-
-pdf(file.path(fig.path,"scatter plot of EZH2 with MHC I genes in target wt.pdf"), width = 6, height = 6)
-par(bty="o", mgp = c(2,0.5,0), mar = c(3.1,4.1,2.1,2.1),tcl=-.25, xpd = F, las = 1)
-plot(NULL, NULL, ylim = c(-3,6), xlim = c(-4,2), 
-     xlab = "EZH2 expression level [z-scored]", ylab = "MHC class I genes\n[z-scored]",col="white",
-     main = "")
-rect(par("usr")[1], 
-     par("usr")[3],
-     par("usr")[2],
-     par("usr")[4],
-     col = "white",
-     border = F)
-grid(col = "grey90", lty = 2, lwd = 1.5) 
-
-points(tmp$EZH2,tmp$B2M,col = mycol[1], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-A`,col = mycol[2], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-B`,col = mycol[3], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-C`,col = mycol[4], pch = 19, cex = 2)
-points(tmp$EZH2,tmp$`HLA-E`,col = mycol[5], pch = 19, cex = 2)
-
-box(col = "black")
-
-legend("topright",
-       legend = c("B2M: r=-0.25, p=0.02",
-                  "HLA-A: r=-0.21, p=0.04",
-                  "HLA-B: r=-0.12, p=0.12",
-                  "HLA-C: r=-0.16, p=0.06",
-                  "HLA-E: r=0.26, p=0.01"),
-       cex = 1.2,
-       text.col = mycol2,
-       bty = "n")
-invisible(dev.off())
-
-tmp <- as.data.frame(t(ccle.wt[c("EZH2","B2M","HLA-A","HLA-B","HLA-C","HLA-E"),]))
-tmp <- as.data.frame(scale(tmp))
-tmp$EZH2.TARGETs <- scale(as.numeric(ezh2.path.ccle[1,colnames(ccle.wt)]))
-cor.test(tmp$EZH2,tmp$B2M,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-A`,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-B`,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-C`,method = "pearson")
-cor.test(tmp$EZH2,tmp$`HLA-E`,method = "pearson")
-
-cor.test(tmp$EZH2.TARGETs,tmp$B2M,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2.TARGETs,tmp$`HLA-A`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2.TARGETs,tmp$`HLA-B`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2.TARGETs,tmp$`HLA-C`,method = "pearson",alternative = "less")
-cor.test(tmp$EZH2.TARGETs,tmp$`HLA-E`,method = "pearson",alternative = "less")
-
-pdf(file.path(fig.path,"scatter plot of EZH2 targets with MHC I genes in ccle wt.pdf"), width = 6, height = 6)
-par(bty="o", mgp = c(2,0.5,0), mar = c(3.1,4.1,2.1,2.1),tcl=-.25, xpd = F, las = 1)
-plot(NULL, NULL, ylim = c(-2,2), xlim = c(-2,1.1), 
-     xlab = "EZH2 targets enrichment level [z-scored]", ylab = "MHC class I genes\n[z-scored]",col="white",
-     main = "")
-rect(par("usr")[1], 
-     par("usr")[3],
-     par("usr")[2],
-     par("usr")[4],
-     col = "white",
-     border = F)
-grid(col = "grey90", lty = 2, lwd = 1.5) 
-
-points(tmp$EZH2.TARGETs,tmp$B2M,col = mycol[1], pch = 19, cex = 2)
-points(tmp$EZH2.TARGETs,tmp$`HLA-A`,col = mycol[2], pch = 19, cex = 2)
-points(tmp$EZH2.TARGETs,tmp$`HLA-B`,col = mycol[3], pch = 19, cex = 2)
-points(tmp$EZH2.TARGETs,tmp$`HLA-C`,col = mycol[4], pch = 19, cex = 2)
-points(tmp$EZH2.TARGETs,tmp$`HLA-E`,col = mycol[5], pch = 19, cex = 2)
-
-box(col = "black")
-
-legend("bottomleft",
-       legend = c("B2M: r=-0.55, p=0.03",
-                  "HLA-A: r=-0.56, p=0.03",
-                  "HLA-B: r=-0.68, p<0.01",
-                  "HLA-C: r=-0.54, p=0.03",
-                  "HLA-E: r=-0.78, p<0.01"),
-       cex = 1.2,
-       text.col = mycol2,
-       bty = "n")
-invisible(dev.off())
-
-# TIMIER
-write.csv(2^gaby.wt-1, file.path(res.path,"gaby.wt.expr.for.TIMER.csv"),row.names = T,quote = F)
-write.csv(2^target.wt-1, file.path(res.path,"target.wt.expr.for.TIMER.csv"),row.names = T,quote = F)
-write.table(2^gaby.wt-1, file.path(res.path,"gaby.wt.expr.for.TIMER.txt"),sep = "\t",col.names = NA,row.names = T,quote = F)
-write.table(2^target.wt-1, file.path(res.path,"target.wt.expr.for.TIMER.txt"),sep = "\t",col.names = NA,row.names = T,quote = F)
-
-gaby.timer <- read.csv(file.path(res.path,"gaby.wt.timer.estimation_matrix.csv"),row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-tmp <- as.data.frame(t(gaby.timer))
-tmp <- cbind.data.frame(tmp, gaby.wt.sinfo[colnames(gaby.timer),c("OS","OS.time")])
-tmp$TME <- NA
-tmp[RNA_Clust1,"TME"] <- "C1"
-tmp[RNA_Clust2,"TME"] <- "C2"
-write.table(tmp, file.path(res.path,"gaby.wt.TIMER.with.survival.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-target.timer <- read.csv(file.path(res.path,"target.wt.timer.estimation_matrix.csv"),row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-tmp <- as.data.frame(t(target.timer))
-tmp <- cbind.data.frame(tmp, target.wt.info[colnames(target.timer),c("OS","OS.time")])
-tmp$TME <- NA
-tmp[RNA_Clust1.target,"TME"] <- "C1"
-tmp[RNA_Clust2.target,"TME"] <- "C2"
-tmp$OS.time <- tmp$OS.time/365
-tmp$OS <- ifelse(tmp$OS == "Dead",1,0)
-write.table(tmp, file.path(res.path,"target.wt.TIMER.with.survival.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-tmp <- data.frame(OS.time = Sinfo.target$`Overall Survival Time in Days`/30.5,
-                  OS = ifelse(Sinfo.target$`Vital Status` == "Dead",1,0),
-                  tune_Clust = annCol.target114[rownames(Sinfo.target),"tune_Clust"],
-                  row.names = rownames(Sinfo.target),
-                  stringsAsFactors = F)
-tmp <- tmp[colnames(target.timer),]
-tmp$Cluster <- ifelse(tmp$tune_Clust == "C1","hot","cold")
-tmp$cd4.quantiseq <- ifelse(as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",]) >0.033,"high","low")
-tmp$cd4.xcell <- ifelse(as.numeric(target.timer["T cell CD4+ (non-regulatory)_XCELL",]) >0,"high","low")
-
-quantile3 <- quantileCut(as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",]),3)
-tmp$cd4.quantiseq <- ifelse(as.character(quantile3) == levels(quantile3)[3],1,0)
-
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+_TIMER",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD8+_QUANTISEQ",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~(as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",])-as.numeric(target.timer["T cell CD8+_QUANTISEQ",])))
-
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ naive_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ central memory_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ memory_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ (non-regulatory)_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(target.timer["T cell CD4+ effector memory_XCELL",]))
-
-fitd <- survdiff(Surv(OS.time, OS) ~ cd4.xcell, data=tmp, na.action=na.exclude)
-p.val <- 1-pchisq(fitd$chisq, length(fitd$n)-1) 
-
-tmp <- gaby.wt.sinfo[colnames(mygene)[1:(ncol(mygene)-1)],c("Age at diagnostic (years)","Sexe","Risk (review/local)","Histology type (review/local)","Overall Stage (review/local)","OS","OS.time","PFS","PFS.time")]
-colnames(tmp) <- c("Age","Gender","Risk","Histology","Stage","OS","OS.time","PFS","PFS.time")
-tmp$Age <- round(tmp$Age,2)
-tmp$Age <- ifelse(tmp$Age > 4.85, ">4.85", "<=4.85")
-tmp$Histology <- gsub(" (311)", "", tmp$Histology, fixed = T)
-tmp$Histology <- gsub(" (312)", "", tmp$Histology, fixed = T)
-tmp$Gender <- ifelse(tmp$Gender == "F","Female","Male")
-tmp$Risk <- gsub(" Risk","",tmp$Risk)
-tmp$RNA_clust <- NA
-tmp[RNA_Clust1,"RNA_clust"] <- "C1"
-tmp[RNA_Clust2,"RNA_clust"] <- "C2"
-tmp$TP53 <- as.character(mygene["TP53",rownames(tmp)])
-tmp$TP53 <- ifelse(tmp$TP53 != "",1, 0)
-tmp <- tmp[colnames(gaby.timer),]
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+_TIMER",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD8+_QUANTISEQ",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~(as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",])-as.numeric(gaby.timer["T cell CD8+_QUANTISEQ",])))
-
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ naive_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ central memory_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ memory_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_XCELL",]))
-coxph(Surv(tmp$OS.time,tmp$OS)~as.numeric(gaby.timer["T cell CD4+ effector memory_XCELL",]))
-
-wilcox.test(as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",RNA_Clust1.target]),
-            as.numeric(target.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",RNA_Clust2.target]))
-
-wilcox.test(as.numeric(target.timer["T cell CD4+ (non-regulatory)_XCELL",RNA_Clust1.target]),
-        as.numeric(target.timer["T cell CD4+ (non-regulatory)_XCELL",RNA_Clust2.target]))
-
-wilcox.test(as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",RNA_Clust1]),
-        as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_QUANTISEQ",RNA_Clust2]))
-
-wilcox.test(as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_XCELL",RNA_Clust1]),
-            as.numeric(gaby.timer["T cell CD4+ (non-regulatory)_XCELL",RNA_Clust2]))
-
-#------------------------------#
-# methylation of target cohort #
-library(data.table)
-library(ChAMP)
-library(ComplexHeatmap)
-library(gplots)
-meth.target <- fread(file.path(data.path,"WT_Sample_Methylation_Profile_09.12.2013_curated.txt"),sep = "\t",check.names = F,stringsAsFactors = F,header = T,data.table = F)
-rownames(meth.target) <- meth.target$TargetID; meth.target <- meth.target[,-1]
-
-matchID <- Sinfo.target[,1,drop = F]
-matchID$code <- substr(matchID$PatientID,11,20)
-colnames(meth.target) <- substr(colnames(meth.target),1,10)
-commeth.sam <- intersect(colnames(meth.target),matchID$code)
-
-matchID <- matchID[which(matchID$code %in% commeth.sam),]
-meth.target <- meth.target[,matchID$code]
-matchID$TME <- annCol.target114[rownames(matchID),"tune_Clust"]
-matchID <- as.data.frame(na.omit(matchID))
-meth.target <- meth.target[,matchID$code]
-colnames(meth.target) <- rownames(matchID)
-
-pd <- data.frame(Sample_Name = colnames(meth.target),
-                 Sample_Group = matchID$TME,
-                 stringsAsFactors = F)
-meth.impute <- champ.impute(beta = as.matrix(meth.target),
-                            pd = pd)
-identical(colnames(meth.target),pd$Sample_Name)
-identical(colnames(meth.impute$beta),pd$Sample_Name)
-dmp.target <- champ.DMP(beta = meth.impute$beta,
-                        pheno = pd$Sample_Group,
-                        adjPVal = 0.25)
-
-dmp.res <- dmp.target$C2_to_C1
-table(dmp.res$C1_AVG - dmp.res$C2_AVG)
-gainC1 <- dmp.res[which(dmp.res$C1_AVG >= 0.4 & dmp.res$C2_AVG <= 0.2),]
-gainC2 <- dmp.res[which(dmp.res$C2_AVG >= 0.4 & dmp.res$C1_AVG <= 0.2),]
-
-indata <- meth.impute$beta[c(rownames(gainC1),rownames(gainC2)),pd[order(pd$Sample_Group),"Sample_Name"]]
-annCol.target.meth <- pd[order(pd$Sample_Group),]
-rownames(annCol.target.meth) <- annCol.target.meth$Sample_Name
-annCol.target.meth <- annCol.target.meth[,-1,drop = F]
-plotdata <- wateRmelon::Beta2M(indata)
-plotdata <- standarize.fun(plotdata,halfwidth = 3)
-pdf(file.path(fig.path,"methylation pattern in target wilms cohort.pdf"),width = 5,height = 5)
-pheatmap(indata,
-         border_color = NA,
-         show_rownames = F,
-         show_colnames = F,
-         cluster_rows = T,
-         cluster_cols = F,
-         name = "beta",
-         annotation_col = annCol.target.meth,
-         annotation_colors = list(Sample_Group = c("C1" = jco[2],"C2" = jco[1])),
-         color = greenred(64))
-invisible(dev.off())
-write.table(dmp.target$C2_to_C1, file.path(res.path,"dmp of TME subtypes in wilms target cohort.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-# perform test and correlation with expression
-outTab <- NULL
-meth.gene <- as.character(dmp.res$gene)
-meth.C1 <- pd[which(pd$Sample_Group == "C1"),"Sample_Name"]
-meth.C2 <- pd[which(pd$Sample_Group == "C2"),"Sample_Name"]
-for (i in 1:nrow(dmp.res)) {
-display.progress(index = i, totalN = nrow(dmp.res))
-  gene <- meth.gene[i]
-  probe <- rownames(dmp.res)[i]
-  if(gene == "") {
-    avg1 <- NA
-    avg2 <- NA
-    wt <- NA
-    ctp.p <- NA
-    ctp.r <- NA
-    cts.p <- NA
-    cts.r <- NA
-    
-  } else if(is.element(gene, rownames(target.wt))){
-    
-    exp1 <- as.numeric(target.wt[gene,meth.C1])
-    exp2 <- as.numeric(target.wt[gene,meth.C2])
-    avg1 <- mean(exp1)
-    avg2 <- mean(exp2)
-    wt <- wilcox.test(exp1,exp2)$p.value
-    ctp <- cor.test(as.numeric(target.wt[i,c(meth.C1,meth.C2)]), as.numeric(meth.target[probe,c(meth.C1,meth.C2)]))
-    ctp.p <- ctp$p.value; ctp.r <- ctp$estimate
-    cts <- cor.test(as.numeric(target.wt[i,c(meth.C1,meth.C2)]), as.numeric(meth.target[probe,c(meth.C1,meth.C2)]),method = "spearman")
-    cts.p <- cts$p.value; cts.r <- cts$estimate
-    
-  } else {
-    
-    avg1 <- NA
-    avg2 <- NA
-    wt <- NA
-    ctp.p <- NA
-    ctp.r <- NA
-    cts.p <- NA
-    cts.r <- NA
-  }
-  
-  outTab <- rbind.data.frame(outTab,
-                             data.frame(probe = probe,
-                                        gene = gene,
-                                        avg.C1 = avg1,
-                                        avg.C2 = avg2,
-                                        wilcox.p = wt,
-                                        person.p = ctp.p,
-                                        person.r = ctp.r,
-                                        spearman.p = cts.p,
-                                        spearman.r = cts.r,
-                                        stringsAsFactors = F,
-                                        row.names = probe),
-                             stringsAsFactors = F)
-}
-dmp.res <- cbind.data.frame(dmp.res, outTab[rownames(dmp.res),])
-write.table(dmp.res, file.path(res.path,"dmp of TME subtypes in wilms target cohort with expression.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-MeTIL.marker <- c("cg20792833","cg20425130","cg23642747","cg12069309","cg21554552")
-meth.metil <- meth.target[MeTIL.marker,pd$Sample_Name]
-MeTIL <- t(scale(t(meth.metil)))
-pca.MeTIL <- prcomp(MeTIL,center = F,scale. = F)
-MeTIL <- pca.MeTIL$rotation[,1]
-pd$MeTIL <- as.numeric(MeTIL)
-wilcox.test(pd$MeTIL~pd$Sample_Group)
-t.test(pd$MeTIL~pd$Sample_Group)
-
 #-------------------------#
 # merge immune annotation #
 immune.bk <- read.delim(file.path(comAnn.path,"Immune.gene.background.txt"),sep = "\t",row.names = NULL,header = T,check.names = F,stringsAsFactors = F)
@@ -9320,7 +7148,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=tmp,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Years)",
@@ -9352,7 +7179,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=tmp1,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Years)",
@@ -9384,7 +7210,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=tmp2,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Years)",
@@ -9408,6 +7233,8 @@ hcs <- hclust(distanceMatrix(as.matrix(indata), "euclidean"), "ward.D"); hcs.tar
 group <- cutree(hcs,2)
 group <- ifelse(group == 1,2,1)
 annCol.target.dawt <- annCol.target114[intersect(com_sam, dawt.target),]
+annCol.target.fhwt <- annCol.target114[intersect(com_sam, fhwt.target),]
+
 annCol.target.dawt$Agem <- ifelse(annCol.target.dawt$Age > 1771, ">4.9","<=4.9")
 annCol.target.dawt$TME <- paste0("C",group)
 annColors.target.dawt <- annColors.target114
@@ -9447,7 +7274,6 @@ p <- ggsurvplot(fit, conf.int=F,
                 pval = T,
                 data=tmp,
                 size=1,
-                #legend = "none",
                 tables.height = 0.3,
                 surv.median.line = "hv",
                 xlab = "Time (Years)",
@@ -9457,7 +7283,7 @@ p$plot <- p$plot +
   scale_y_continuous(breaks = seq(0, 1, 0.25),labels = seq(0,100,25))
 
 pdf.options(reset = TRUE, onefile = FALSE)
-pdf(file.path(fig.path,"KM of new cluster of DAWT for group of CCR immune signature by target 114 (purified by tp) data in TARGET cohort 2 clusters.pdf"),width = 5,height = 5)
+pdf(file.path(fig.path,"KM of new cluster of DAWT for group of CCR immune signature by target 114 (purified by tp) data in TARGET cohort 2 clusters.pdf"),width = 3.5,height = 5)
 p
 invisible(dev.off())
 
@@ -9472,9 +7298,6 @@ hm1 <- pheatmap(as.matrix(plotdata),
               annotation_col = annCol.target.dawt[colnames(plotdata),c("TME","TLS")],
               annotation_colors = annColors.target.dawt[c("TME","TLS")],
               color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-              #color = viridisLite::inferno(64),
-              #color = viridisLite::viridis(64),
-              # color = greenred(64),
               treeheight_row = 15,
               treeheight_col = 15,
               cellwidth = 10,
@@ -9490,9 +7313,6 @@ hm2 <- pheatmap(as.matrix(plotdata),
                 cluster_cols = dendsort(hcs.target114.dawt),
                 border_color = NA,
                 color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-                #color = viridisLite::inferno(64),
-                #color = viridisLite::viridis(64),
-                # color = greenred(64),
                 treeheight_row = 15,
                 treeheight_col = 15,
                 cellwidth = 10,
@@ -9507,9 +7327,6 @@ hm3 <- pheatmap(as.matrix(plotdata),
                 cluster_cols = dendsort(hcs.target114.dawt),
                 border_color = NA,
                 color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
-                #color = viridisLite::inferno(64),
-                #color = viridisLite::viridis(64),
-                # color = greenred(64),
                 treeheight_row = 15,
                 treeheight_col = 15,
                 cellwidth = 10,
@@ -9591,7 +7408,7 @@ wilcox.test(ezh2.target.dawt.c1,ezh2.target.dawt.c2) #0.0156
 tmp <- data.frame(exp = c(ezh2.target.dawt.c1,ezh2.target.dawt.c2),
                   mut = rep(c("C1","C2"),c(24,12)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-pdf(file.path(fig.path,"boxplot for EZH2 expression in target DAWT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
+pdf(file.path(fig.path,"boxplot for EZH2 expression in target DAWT cohort regarding RNA cluster.pdf"),width = 2.5,height = 2.5)
 par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "RNA Cluster",
@@ -9611,16 +7428,15 @@ ezh2.path.target.dawt <- gsva(expr = as.matrix(target.wt[,rownames(annCol.target
                               method = "ssgsea")
 ezh2.path.target.dawt.c1 <- as.numeric(ezh2.path.target.dawt[1,RNA_Clust1.target.dawt])
 ezh2.path.target.dawt.c2 <- as.numeric(ezh2.path.target.dawt[1,RNA_Clust2.target.dawt])
-wilcox.test(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2, alternative = "less") #0.039
+wilcox.test(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2, alternative = "less")
 tmp <- data.frame(exp = c(ezh2.path.target.dawt.c1,ezh2.path.target.dawt.c2),
                   mut = rep(c("C1","C2"),c(24,12)))
 tmp$mut <- factor(tmp$mut,levels = c("C1","C2"))
-pdf(file.path(fig.path,"boxplot for EZH2 target in target DAWT cohort regarding RNA cluster.pdf"),width = 2.5,height = 3.5)
+pdf(file.path(fig.path,"boxplot for EZH2 target in target DAWT cohort regarding RNA cluster.pdf"),width = 2.5,height = 2.5)
 par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
 boxplot(exp~mut,data = tmp,
         xlab = "RNA Cluster",
         ylab = "ssGSEA score",
-        #ylim = c(1,5),
         outline = F,
         col = ggplot2::alpha(jco[2:1],0.7))
 stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
@@ -9661,9 +7477,6 @@ wilcox.test(target.pure$es.pure["T.cells.CD4.memory.activated",RNA_Clust1.target
 
 p <- ggplot(d2, aes(gene, expr, fill=TME)) + 
   geom_boxplot(aes(col = TME),outlier.shape = NA,alpha = 1) + 
-  # geom_point(shape = 21, size=0.6,
-  #            position = position_jitterdodge(),
-  #            aes(color=iCluster), alpha = 1) +
   geom_text(aes(gene, y=max(expr)), 
             label=pv$sigcode,
             data=d2, 
@@ -9700,9 +7513,6 @@ pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1),
 
 p <- ggplot(d2, aes(gene, expr, fill=TME)) + 
   geom_boxplot(aes(col = TME),outlier.shape = NA,alpha = 1) + 
-  # geom_point(shape = 21, size=0.6,
-  #            position = position_jitterdodge(),
-  #            aes(color=iCluster), alpha = 1) +
   geom_text(aes(gene, y=max(expr)), 
             label=pv$sigcode,
             data=d2, 
@@ -9739,9 +7549,6 @@ pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1),
 
 p <- ggplot(d2, aes(gene, expr, fill=TME)) + 
   geom_boxplot(aes(col = TME),outlier.shape = NA,alpha = 1) + 
-  # geom_point(shape = 21, size=0.6,
-  #            position = position_jitterdodge(),
-  #            aes(color=iCluster), alpha = 1) +
   geom_text(aes(gene, y=max(expr)), 
             label=pv$sigcode,
             data=d2, 
@@ -9776,7 +7583,6 @@ pvalues <- sapply(d2$gene, function(x) {
   res <- wilcox.test(PCT ~ TME, data = subset(d2, gene == x))$p.value
 })
 pv <- data.frame(gene = d2$gene, pvalue = pvalues)
-
 pv$sigcode <- cut(pv$pvalue, c(0, 0.001, 0.01, 0.05, 0.1, 1), 
                   labels=c('***', '**', '*', '.', ' '))
 
@@ -9899,9 +7705,6 @@ p <- pheatmap(as.matrix(plotdata),
               annotation_col =  annCol.target.dawt[colnames(plotdata),c("ERV","TME","OS","TP53_MUT", "TP53_LOSS")],
               annotation_colors = annColors.target.dawt[c("ERV","TME","OS","TP53_MUT", "TP53_LOSS")],
               color = NMF:::ccRamp(x = heatmap.GrWtRd,n = 64),
-              # color = viridisLite::inferno(64),
-              # color = viridisLite::viridis(64),
-              # color = greenred(64),
               treeheight_row = 15,
               treeheight_col = 15,
               cellwidth = 6,
@@ -9944,7 +7747,6 @@ resData$fc <- 2^resData$log2fc
 resData <- resData[,c("id","fc","log2fc","pvalue","padj")]
 resData <- cbind.data.frame(resData,erv.anno[rownames(resData),])
 write.table(resData,file.path(res.path,"deseq2 results between supervised target DAWT ERV 2 groups using all features.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-#plotdata <- standarize.fun(log2(erv.normcount[rownames(tmp1),colnames(target.wt)] + 1), halfwidth = 2)
 resData <- read.table(file.path(res.path,"deseq2 results between supervised target DAWT ERV 2 groups using all features.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
 plotdata <- standarize.fun(log2(erv.normcount[,rownames(annCol.target.dawt)] + 1)[rownames(resData[which(resData$padj < 0.05 & abs(resData$log2fc) > log2(2)),]),], halfwidth = 2)
 
@@ -9956,16 +7758,12 @@ p <- pheatmap(as.matrix(plotdata),
               annotation_col =  annCol.target.dawt[colnames(plotdata),c("ERV2","TME","HISTOLOGY","OS","TP53_MUT", "TP53_LOSS")],
               annotation_colors = annColors.target.dawt[c("ERV2","TME","HISTOLOGY","OS","TP53_MUT", "TP53_LOSS")],
               color = NMF:::ccRamp(x = heatmap.GrWtRd,n = 64),
-              # color = viridisLite::inferno(64),
-              #color = viridisLite::viridis(64),
-              # color = greenred(64),
               treeheight_row = 15,
               treeheight_col = 15,
               cellwidth = 3.5,
               cellheight = 2.5,
               show_colnames = F,
               show_rownames = F,
-              #cutree_cols = 2,
               fontsize_col = 8)
 pdf(file.path(fig.path, "supervised clustering of ERVs in target wilms DAWT.pdf"), height=12,width = 10)
 draw(p, annotation_legend_side = "left")
@@ -9976,9 +7774,9 @@ resData <- read.table(file.path(res.path,"deseq2 results between supervised targ
 dim(resData[which(resData$padj < 0.05 & resData$log2fc > 1.5),])
 dim(resData[which(resData$padj < 0.05 & resData$log2fc < -1.5),])
 
-plot_mode <- "advanced" 
-logFCcut <- log2(1.5) #log2-foldchange
-adjPcut <- 0.05 #adj.P.value
+plot_mode <- "advanced"
+logFCcut <- log2(1.5) 
+adjPcut <- 0.05 
 pvalCut <- 0.05
 
 x <- resData
@@ -9987,7 +7785,6 @@ xmax <- (range(x$log2fc)[1]+ (10-range(x$log2fc)[1]))
 ymin <- 0
 ymax <- 5
 
-# 複雜的的setting for size
 n1 <- length(x[, 1])
 size <- rep(2, n1)
 cols <- rep("grey30", n1)
@@ -10015,13 +7812,12 @@ p1 <- ggplot(data=x, aes(log2fc, -log10(padj))) +
     labels = c(-3,-2, -1, 0, 1, 2,3),
     limits = c(-3, 3) 
   ) +
-  
   geom_vline(xintercept = c(-1,-logFCcut, logFCcut,1), color="grey40", 
              linetype="longdash", lwd = 0.5) + 
   geom_hline(yintercept = -log10(pvalCut), color="grey40", 
              linetype="longdash", lwd = 0.5) +
   
-  theme_bw(base_size = 12#, base_family = "Times" 
+  theme_bw(base_size = 12
   ) +
   theme(panel.grid=element_blank(),
         axis.text = element_text(size = 12, color = "black"))
@@ -10050,7 +7846,6 @@ p <- pheatmap(as.matrix(plotdata),
               border_color = NA,
               annotation_col = annCol.target.dawt[colnames(plotdata),c("HRS","TME", "HISTOLOGY", "OS","TP53_MUT","TP53_LOSS")],
               annotation_colors = annColors.target.dawt[c("HRS","TME", "HISTOLOGY", "OS","TP53_MUT","TP53_LOSS")],
-              #color = NMF:::ccRamp(x = heatmap.BlBkRd,n = 64),
               color = viridisLite::viridis(64),
               treeheight_row = 15,
               treeheight_col = 15,
@@ -10076,10 +7871,9 @@ comgene <- intersect(rownames(trainExpr),rownames(testExpr))
 trainExpr <- as.matrix(trainExpr[comgene,])
 testExpr <- testExpr[comgene,]
 outTab <- NULL
-for (i in 1:ncol(trainPtype)) { 
+for (i in 1:ncol(trainPtype)) {
   display.progress(index = i,totalN = ncol(trainPtype))
   d <- colnames(trainPtype)[i]
-  #tmp <- log2(as.vector(trainPtype[,d]) + 0.00001) 
   tmp <- as.vector(trainPtype[,d])
   
   ptypeOut <- quiet(calcPhenotype(trainingExprData = as.matrix(trainExpr),
@@ -10320,8 +8114,6 @@ dev.off()
 
 # multicox
 tmp <- wt3[,c("CD4:CD8 ratio","OS","OS.time","PFS","PFS.time","Overall Stage (review/local)","Risk (review/local)","Histology type (review/local)")]
-#tmp <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD4:CD8 ratio","OS","OS.time","PFS","PFS.time","Overall Stage (review/local)","Risk (review/local)","Histology type (review/local)")]
-
 colnames(tmp)[1] <- c("ratio")
 tmp$ratio <- tmp$ratio/10
 tmp$group <- factor(ifelse(tmp$ratio > median(tmp$ratio),"High","Low"),levels = c("Low","High"))
@@ -10352,8 +8144,8 @@ tabletext[2,2:3] <- NA
 
 pdf(file.path(fig.path,"forestplot of risk table of 55 WTs regarding RFS.pdf"), width = 8, height = 6)
 forestplot(labeltext=tabletext,
-           mean=c(NA,log2(as.numeric(hrtable$HR))),#log2(HR)
-           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))), 
+           mean=c(NA,log2(as.numeric(hrtable$HR))),
+           lower=c(NA,log2(as.numeric(hrtable$lower.95CI))),
            upper=c(NA,log2(as.numeric(hrtable$upper.95CI))),
            graph.pos=3,
            graphwidth = unit(.25,"npc"),
@@ -10562,263 +8354,6 @@ pdf(file.path(fig.path, "supervised clustering using msigdb pathways on wilms tu
 draw(p1 %v% p2, annotation_legend_side = "bottom", heatmap_legend_side = "bottom")
 invisible(dev.off())
 
-#--------------------------------------------------------#
-# redo clustering of ramdonly choosed samples using DAWT #
-#set.seed(2020)
-set.seed(20000112)
-target.dawt.sel <- sample(rownames(annCol.target.dawt),15)
-
-# generate expression data for all selected tumor samples
-all.exp <- TPM[,c(rcc.sam,target.dawt.sel)]
-all.logexp <- log2(all.exp + 1)
-indata <- all.logexp[rowSums(all.logexp) > 0,]
-
-# pca to view the batches
-batchPCA(indata = indata[,c(rcc.sam,target.dawt.sel)],
-         batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel),"Cohort"],
-         fig.dir = fig.path,
-         PCA.fig.title = "PCA.all.gaby2",
-         cols = annColors.all.gaby$Cohort,
-         showID = F,
-         cex = 0.9,
-         showLegend = T)
-
-tmp <- annCol.all.gaby
-tmp <- rbind.data.frame(tmp[tmp$SampleType == "Tumor",],tmp[target.dawt.sel,])
-tmp <- Sinfo[rownames(tmp),]
-write.table(tmp,file.path(res.path,"randomly selected 80 kidney tumor2.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-# remove batch effect by combat
-library(sva)
-modcombat = model.matrix(~1, data=annCol.all.gaby[c(rcc.sam,target.dawt.sel),])
-all.logexp.combat = ComBat(dat=as.matrix(indata), batch=annCol.all.gaby[c(rcc.sam,target.dawt.sel),"Cohort"], mod=modcombat)
-batchPCA(indata = all.logexp.combat[,c(rcc.sam,target.dawt.sel)],
-         batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel),"Cohort"],
-         fig.dir = fig.path,
-         PCA.fig.title = "PCA.all.gaby.combat2",
-         cols = annColors.all.gaby$Cohort,
-         showID = F,
-         cex = 0.9,
-         showLegend = T)
-
-pca2batch(indata = all.logexp.combat[,c(rcc.sam,target.dawt.sel)],
-          batch = annCol.all.gaby[c(rcc.sam,target.dawt.sel),],
-          batchvar = c("Subtype","Cohort"),
-          fig.dir = fig.path,
-          PCA.fig.title = "PCA.all.gaby.combat.subtype2",
-          cols = as.character(annColors.all.gaby$Subtype[sort(names(annColors.all.gaby$Subtype))]),
-          showID = F,
-          cex = 0.8,
-          showLegend = T,
-          width=6, height=5, 
-          batch1move = 0.6,batch2move = 0,
-          pos1="bottomright", pos2="topright",
-          withoutgrid = T) 
-
-# kirc sample batches
-tmp <- annCol.all.gaby[c(rcc.sam,target.dawt.sel),]
-tmp <- tmp[which(tmp$Subtype %in% c("KIRC","gKIRC")),]
-batchPCA(indata = all.logexp.combat[,rownames(tmp)],
-         batch = annCol.all.gaby[rownames(tmp),"Subtype"],
-         fig.dir = fig.path,
-         PCA.fig.title = "PCA.kirc.tumors.combat2",
-         cols = c(red,blue),
-         showID = T,
-         cex = 0.6,
-         showLegend = T)
-
-# calculate estimate score
-tmp <- as.data.frame(all.logexp.combat[,c(rcc.sam,target.dawt.sel)])
-tmp$symbol <- Ginfo[rownames(tmp),"genename"]
-tmp <- apply(tmp[,setdiff(colnames(tmp), "symbol")], 2, function(x) tapply(x, INDEX=factor(tmp$symbol), FUN=median, na.rm=TRUE))
-write.table(tmp, file.path(res.path,"all_with_random_15sam_of_TARGET_estimate.input2.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-filterCommonGenes(input.f=file.path(res.path, "all_with_random_15sam_of_TARGET_estimate.input2.txt") , output.f=file.path(res.path,"all_with_random_15sam_of_TARGET_ESTIMATE2.txt"), id="GeneSymbol")
-estimateScore(file.path(res.path,"all_with_random_15sam_of_TARGET_ESTIMATE2.txt"), file.path(res.path,"all_with_random_15sam_of_TARGET_estimate_score2.txt"), platform="affymetrix")
-est <- read.table(file = file.path(res.path,"all_with_random_15sam_of_TARGET_estimate_score2.txt"),header = T,row.names = NULL,check.names = F,stringsAsFactors = F,sep = "\t")
-rownames(est) <- est[,2]; colnames(est) <- est[1,]; est <- est[-1,c(-1,-2)];
-est <- sapply(est, as.numeric); rownames(est) <- c("StromalScore","ImmuneScore","ESTIMATEScore","TumorPurity")
-colnames(est) <- colnames(indata); est.backup <- est
-est <- annTrackScale(indata = est, halfwidth = 2, poolsd = F); est <- as.data.frame(t(est))
-
-annCol.all.gaby <- Sinfo[all.sam,1:2]
-annCol.all.gaby$Cohort <- ifelse(annCol.all.gaby$Subtype %in% c("BLCA","KICH","KIRC","KIRP","TRCC"),"TCGA",
-                                 ifelse(annCol.all.gaby$Subtype == "TARGET_Wilm","TARGET","GABY"))
-annCol.all.gaby <- cbind.data.frame(annCol.all.gaby, est[rownames(annCol.all.gaby),c("ImmuneScore","StromalScore")])
-annCol.all.gaby <- cbind.data.frame(annCol.all.gaby, as.data.frame(t(est.backup))[rownames(annCol.all.gaby),"TumorPurity",drop = F])
-
-annColors.all.gaby[["ImmuneScore"]] <- greenred(64)
-annColors.all.gaby[["StromalScore"]] <- greenred(64)
-
-# View(annCol.all.gaby[c(rcc.sam,target.dawt.sel),])
-
-# identify optimal cluster number
-indata <- all.logexp.combat[,c(rcc.sam,target.dawt.sel)]
-# indata <- indata[rowSums(indata > 1) > 0.9*ncol(indata),]
-var <- apply(indata, 1, mad)
-# var <- apply(indata, 1, sd)
-sel_gene <- var[var > quantile(var,probs = seq(0,1,0.1))[10]]
-# sel_gene <- var[order(var,decreasing = T)][1:1000]
-indata <- indata[names(sel_gene),]
-BICplot(geneExp = indata,
-        figure.dir = fig.path,
-        figlable = "logcombat_with_random_15sam_of_TARGET2",
-        Kmax = 10)
-
-# use consensus hierachical clustering
-N.cluster <- 5
-N.bootstrap <- 500
-N.gene.per.bootstrap <- round(0.9*nrow(indata))
-N.sample.per.bootstrap <- round(0.9*ncol(indata))
-map.res.path <- file.path(tumor.path, paste("commonCluster2_dawt_combat_log2TPM_ClusterNum",N.cluster,sep = ""))
-featType <- "all_with_random_15sam_of_TARGET2"
-
-cluster.all.ans <- plot.common.cluster(indata, 
-                                       tumorname=tumorname, 
-                                       N.cluster=N.cluster, 
-                                       N.bootstrap=N.bootstrap, 
-                                       N.gene.per.bootstrap=N.gene.per.bootstrap, 
-                                       N.sample.per.bootstrap=N.sample.per.bootstrap, 
-                                       map.res.path=map.res.path, fig.path=fig.path, 
-                                       featType=featType,
-                                       annCol=annCol.all.gaby[colnames(indata),c(2,3,4,5)], annColors=annColors.all.gaby, 
-                                       seed=20000112, 
-                                       dist0="pearson", link0 = "ward.D2",
-                                       dist="pearson", link = "ward.D2",
-                                       clstCol = mycol[1:5], 
-                                       height = 7, dendsort = T)
-
-pdf(file.path(fig.path, "consensus heatmap of all tumors with random 15 TARGET2.pdf"), height=8,width = 10)
-pheatmap(as.matrix(cluster.all.ans$sum),
-         cluster_rows = as.hclust(cluster.all.ans$dendro),
-         cluster_cols = as.hclust(cluster.all.ans$dendro),
-         border_color = NA,
-         annotation_col = cluster.all.ans$annCol,
-         annotation_colors = cluster.all.ans$annColors,
-         # color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-         color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-         treeheight_row = 15,
-         treeheight_col = 15,
-         show_colnames = T,
-         show_rownames = F,
-         fontsize_col = 4)
-invisible(dev.off())
-
-hcg <- hclust(distanceMatrix(as.matrix(t(indata)), "pearson"), "ward.D2")
-plotdata <- standarize.fun(indata,halfwidth = 2)
-use_raster <- F
-p <- pheatmap(as.matrix(plotdata),
-              cluster_rows = dendsort(hcg),
-              cluster_cols = as.hclust(cluster.all.ans$dendro),
-              border_color = NA,
-              annotation_col = cluster.all.ans$annCol,
-              annotation_colors = cluster.all.ans$annColors,
-              color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-              # color = NMF:::ccRamp(x = c("#EAF0FA","#6081C3","#3454A7"),n = 64),
-              treeheight_row = 15,
-              treeheight_col = 15,
-              show_colnames = F,
-              show_rownames = F,
-              cellwidth = 3,
-              cellheight = 0.05,
-              fontsize_col = 4)
-pdf(file.path(fig.path, "expression heatmap of all tumors with random 15 TARGET2.pdf"), height=8,width = 10)
-draw(p, annotation_legend_side = "left", use_raster = F)
-invisible(dev.off())
-
-tmp <- cluster.all.ans$annCol
-tmp$raw.immune.score <- as.numeric(est.backup["ImmuneScore",rownames(tmp)])
-tmp$raw.stromal.score <- as.numeric(est.backup["StromalScore",rownames(tmp)])
-
-tmp1 <- tmp[which(tmp$Clustering == "cluster3"),"raw.immune.score"]
-tmp2 <- tmp[which(tmp$Clustering == "cluster4"),"raw.immune.score"]
-wilcox.test(tmp1,tmp2) # 0.000188
-
-tmp1 <- tmp[which(tmp$Clustering == "cluster3"),"raw.stromal.score"]
-tmp2 <- tmp[which(tmp$Clustering == "cluster4"),"raw.stromal.score"]
-wilcox.test(tmp1,tmp2) # 9.79e-07
-
-# calculate immune enrichment score and re-cluster
-indata <- read.table(file.path(res.path,"all_with_random_15sam_of_TARGET_estimate.input2.txt"),sep = "\t",row.names = 1,header = T,check.names = F,stringsAsFactors = F)
-indata <- gsva(expr = as.matrix(indata),
-               gset.idx.list = immune.sig.ccr,
-               method = "gsva")
-hcs <- hclust(distanceMatrix(as.matrix(indata), "euclidean"), "ward.D"); hcs.random15 <- hcs
-plotdata <- standarize.fun(indata,halfwidth = 2)
-p <- pheatmap(as.matrix(plotdata[immune.sig.ccr.order,]),
-              cluster_rows = F,
-              cluster_cols = hcs,
-              border_color = NA,
-              annotation_col = cluster.all.ans$annCol,
-              annotation_colors = cluster.all.ans$annColors,
-              #color = NMF:::ccRamp(c("#2165AA","#F2F1F3","#B91F33"),64),
-              color = inferno(64),
-              gaps_row = c(14,22),
-              treeheight_row = 15,
-              treeheight_col = 15,
-              show_colnames = F,
-              show_rownames = T,
-              cellwidth = 3,
-              cellheight = 8,
-              fontsize_col = 4,
-              fontsize_row = 8)
-pdf(file = file.path(fig.path,"CCR immune signature heatmap of all with random 15sam of target in 2 clusters2.pdf"), width = 10,height = 8)
-draw(p, annotation_legend_side = "left", use_raster = F)
-invisible(dev.off())
-
-# differential expression analysis
-pd <- data.frame(Samples = rownames(cluster.all.ans$annCol),
-                 Group = cluster.all.ans$annCol$Subtype,
-                 stringsAsFactors = FALSE)
-pd$Group <- ifelse(pd$Group %in% c("Diffuse anaplastic WT","Focal anaplastic WT","TARGET_Wilm"),"WT","Others")
-design <-model.matrix(~ -1 + factor(pd$Group, levels = c("WT","Others")))
-colnames(design) <- c("WT","Others")
-gset <- all.logexp.combat[,pd$Samples]
-fit <- limma::lmFit(gset, design = design);
-contrastsMatrix <- limma::makeContrasts(WT - Others, levels = c("WT", "Others"))
-fit2 <- limma::contrasts.fit(fit, contrasts = contrastsMatrix)
-fit2 <- limma::eBayes(fit2, robust = T)
-resData <- limma::topTable(fit2, adjust = "fdr", sort.by = "B", number = 100000, confint = T)
-resData <- as.data.frame(subset(resData, select=c("logFC","t","B","P.Value","adj.P.Val","CI.L","CI.R")))
-resData$id <- rownames(resData)
-colnames(resData) <- c("log2fc","t","B","pvalue","padj","CI.L","CI.R","id")
-resData$fc <- 2^resData$log2fc
-resData <- resData[order(resData$padj),c("id","fc","log2fc","pvalue","padj","CI.L","CI.R")]
-resData$gene <- Ginfo[rownames(resData),"genename"]
-resData <- na.omit(resData)
-write.table(resData,file.path(res.path,"limma results between WT and Others in 80 cases.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
-
-library(edgeR)
-df <- countsTable[Mids,rownames(cluster.all.ans$annCol)]
-group = factor(pd$Group,levels = c("Others","WT"))
-batch = factor(cluster.all.ans$annCol$Cohort)
-design <- model.matrix(~batch+group); rownames(design) <- rownames(cluster.all.ans$annCol)
-y <- DGEList(counts=df, group=group)
-y <- calcNormFactors(y)
-y <- estimateDisp(y, design, robust=TRUE)
-fit <- glmFit(y, design)
-lrt <- glmLRT(fit)
-ordered_tags <- topTags(lrt, n=100000)
-allDiff=ordered_tags$table
-allDiff=allDiff[is.na(allDiff$FDR)==FALSE,]
-diff=allDiff
-diff$gene <- Ginfo[rownames(diff),"genename"]
-write.table(diff,file.path(res.path,"edger results between WT and Others in 80 cases.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
-
-geneList <- diff$logFC
-names(geneList) <- diff$gene
-geneList <- sort(geneList,decreasing = T)
-gsea_wt_vs_others <- GSEA(geneList = geneList,
-                                    TERM2GENE=MSigDB,
-                                    pvalueCutoff = 0.25,
-                                    nPerm = 10000,
-                                    seed = T,
-                                    verbose=F)
-res <- data.frame(gsea_wt_vs_others)
-write.table(as.data.frame(gsea_wt_vs_others),file.path(res.path,"GSEA results for WT vs Others mRNA DEGs in 80 cases.txt"),row.names = T,col.names = NA,sep = "\t",quote = F)
-
-mean(all.logexp.combat["ENSG00000117632.16", pd[which(pd$Group == "WT"),"Samples"]])
-mean(all.logexp.combat["ENSG00000117632.16", pd[which(pd$Group == "Others"),"Samples"]])
-
 #--------------------------------------------#
 # comparison of drug sensitivity between tme #
 tmp1 <- gdsc.pred.auc.gaby[which(gdsc.pred.auc.gaby$TME == "TP53_Wild"),2]
@@ -10980,8 +8515,17 @@ wilcox.test(target.cgassting[2,rownames(annCol.target.dawt)]~annCol.target.dawt$
 
 #-------------------------------------#
 # cibersortx for immune deconvolution #
-ciber.gaby <- read.delim(file = file.path(res.path,"CIBERSORTx_Wilms_Gaby.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
-ciber.target <- read.delim(file = file.path(res.path,"CIBERSORTx_Wilms_Target.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+tmp <- 2^gaby.wt-1
+write.table(tmp, file = file.path(res.path,"gaby_wt_cibersort_input.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+
+tmp <- 2^target.wt-1
+write.table(tmp, file = file.path(res.path,"target_wt_cibersort_input.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+
+# ciber.gaby <- read.delim(file = file.path(res.path,"CIBERSORTx_Wilms_Gaby.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+# ciber.target <- read.delim(file = file.path(res.path,"CIBERSORTx_Wilms_Target.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+ciber.gaby <- read.delim(file = file.path(res.path,"CIBERSORTx_SFCE_WT_LM22.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+ciber.target <- read.delim(file = file.path(res.path,"CIBERSORTx_TARGET_WT_LM22.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+
 ciber.gaby <- ciber.gaby[,1:22]
 ciber.target <- ciber.target[,1:22]
 
@@ -10999,6 +8543,7 @@ for (i in colnames(ciber.gaby)) {
                                               stringsAsFactors = F),
                                    stringsAsFactors = F)
 }
+write.table(outTab.ciber, file = file.path(res.path,"comparison of cibersort deconvolusion between wt subtypes in gaby cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
 
 outTab.ciber <- NULL
 for (i in colnames(ciber.target)) {
@@ -11008,12 +8553,117 @@ for (i in colnames(ciber.target)) {
   
   outTab.ciber <- rbind.data.frame(outTab.ciber,
                                    data.frame(cell = i,
+                                              avg.cold = mean(tmp2),
+                                              avg.hot = mean(tmp1),
+                                              p = wilcox.test(tmp1,tmp2)$p.value,
+                                              stringsAsFactors = F),
+                                   stringsAsFactors = F)
+}
+write.table(outTab.ciber, file = file.path(res.path,"comparison of cibersort deconvolusion between wt subtypes in target dawt cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
+
+# TR4 was obtained from FACS-sorted profiles of epithelial cells (EPCAM+), fibroblasts (CD10+), endothelial cells (CD31+) and immune cells (CD45+), obtained from lung cancer specimens
+ciber.gaby <- read.delim(file = file.path(res.path,"CIBERSORTx_SFCE_WT_TR4.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+ciber.target <- read.delim(file = file.path(res.path,"CIBERSORTx_TARGET_WT_TR4.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+ciber.gaby <- ciber.gaby[,1:4]
+ciber.target <- ciber.target[,1:4]
+
+outTab.ciber <- NULL
+for (i in colnames(ciber.gaby)) {
+  
+  tmp1 <- ciber.gaby[rownames(annCol.wt.gaby.genomic.alter[which(annCol.wt.gaby.genomic.alter$RNA_Clust == "TP53_Mutated"),]),i]
+  tmp2 <- ciber.gaby[rownames(annCol.wt.gaby.genomic.alter[which(annCol.wt.gaby.genomic.alter$RNA_Clust == "TP53_Wild"),]),i]
+  
+  outTab.ciber <- rbind.data.frame(outTab.ciber,
+                                   data.frame(cell = i,
                                               avg.cold = mean(tmp1),
                                               avg.hot = mean(tmp2),
                                               p = wilcox.test(tmp1,tmp2)$p.value,
                                               stringsAsFactors = F),
                                    stringsAsFactors = F)
 }
+write.table(outTab.ciber, file = file.path(res.path,"comparison of tr4 deconvolusion between wt subtypes in gaby cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
+
+tmp1 <- ciber.gaby[rownames(annCol.wt.gaby.genomic.alter[which(annCol.wt.gaby.genomic.alter$RNA_Clust == "TP53_Mutated"),]),"CD45"]
+tmp2 <- ciber.gaby[rownames(annCol.wt.gaby.genomic.alter[which(annCol.wt.gaby.genomic.alter$RNA_Clust == "TP53_Wild"),]),"CD45"]
+
+tmp <- data.frame(exp = c(tmp2,tmp1),
+                  mut = rep(c("iWT","dWT"),c(length(tmp2),length(tmp1))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for CD45 immune proportion in gaby WT regarding tme subtypes.pdf"),width = 4,height = 3)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "Immune cells (CD45+)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.0159",cex = 1)
+invisible(dev.off())
+
+outTab.ciber <- NULL
+for (i in colnames(ciber.target)) {
+  
+  tmp1 <- ciber.target[rownames(annCol.target.dawt[which(annCol.target.dawt$TME == "C1"),]),i]
+  tmp2 <- ciber.target[rownames(annCol.target.dawt[which(annCol.target.dawt$TME == "C2"),]),i]
+  
+  outTab.ciber <- rbind.data.frame(outTab.ciber,
+                                   data.frame(cell = i,
+                                              avg.cold = mean(tmp2),
+                                              avg.hot = mean(tmp1),
+                                              p = wilcox.test(tmp1,tmp2)$p.value,
+                                              stringsAsFactors = F),
+                                   stringsAsFactors = F)
+}
+write.table(outTab.ciber, file = file.path(res.path,"comparison of tr4 deconvolusion between wt subtypes in target dawt cohort.txt"),sep = "\t",row.names = F,col.names = T,quote = F)
+
+tmp1 <- ciber.target[rownames(annCol.target.dawt[which(annCol.target.dawt$TME == "C1"),]),"CD45"]
+tmp2 <- ciber.target[rownames(annCol.target.dawt[which(annCol.target.dawt$TME == "C2"),]),"CD45"]
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for CD45 immune proportion in target WT regarding tme subtypes.pdf"),width = 2,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "Immune cells (CD45+)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.2,"P = 0.0007",cex = 1)
+invisible(dev.off())
+
+dwls.res <- ciber.gaby[c(RNA_Clust1,RNA_Clust2),c(1,2,3,4)]
+colnames(dwls.res) <- c("Fibroblast (CD10+)",  "Endothelial (CD31+)",  "Bulk immune cell (CD45+)",  "Epithelial (EPCAM+)")
+dwls.res$ID <- c(RNA_Clust1,RNA_Clust2)
+df_long <- dwls.res %>%
+  pivot_longer(cols = -ID, names_to = "Feature", values_to = "Value")
+df_long$Feature <- factor(df_long$Feature, levels = c("Bulk immune cell (CD45+)","Epithelial (EPCAM+)","Fibroblast (CD10+)","Endothelial (CD31+)"))
+df_long$ID <- factor(df_long$ID, levels = c(RNA_Clust1,RNA_Clust2))
+ggplot(df_long, aes(x = ID, y = Value, fill = Feature)) +
+  geom_col(position = position_fill(), width = 1) +
+  labs(x = "", y = "Relative Abundance") +
+  scale_fill_manual(values = c("#E64B35","#4DBBD5","#00A087","#3C5488")) +
+  theme_classic() +
+  coord_fixed(ratio = (0.9 * nrow(df_long)) / ncol(df_long))
+ggsave(filename = file.path(fig.path,"stacked plot for 4 cell types in each sample in gaby using cibersortx.pdf"),width = 15,height = 5)
+
+dwls.res <- ciber.target[c(RNA_Clust1.target.dawt,RNA_Clust2.target.dawt),c(1,2,3,4)]
+colnames(dwls.res) <- c("Fibroblast (CD10+)",  "Endothelial (CD31+)",  "Bulk immune cell (CD45+)",  "Epithelial (EPCAM+)")
+dwls.res$ID <- c(RNA_Clust1.target.dawt,RNA_Clust2.target.dawt)
+df_long <- dwls.res %>%
+  pivot_longer(cols = -ID, names_to = "Feature", values_to = "Value")
+df_long$Feature <- factor(df_long$Feature, levels = c("Bulk immune cell (CD45+)","Epithelial (EPCAM+)","Fibroblast (CD10+)","Endothelial (CD31+)"))
+df_long$ID <- factor(df_long$ID, levels = c(RNA_Clust1.target.dawt,RNA_Clust2.target.dawt))
+ggplot(df_long, aes(x = ID, y = Value, fill = Feature)) +
+  geom_col(position = position_fill(), width = 1) +
+  labs(x = "", y = "Relative Abundance") +
+  scale_fill_manual(values = c("#E64B35","#4DBBD5","#00A087","#3C5488")) +
+  theme_classic() +
+  coord_fixed(ratio = (0.9 * nrow(df_long)) / ncol(df_long))
+ggsave(filename = file.path(fig.path,"stacked plot for 4 cell types in each sample in target using cibersortx.pdf"),width = 15,height = 5)
 
 # Calculate the median follow-up time
 library(readxl)
@@ -11077,6 +8727,1663 @@ in_gct <- target.wt[GENELIST,rownames(sam_info)]
 gct_file <- file.path(res.path,"target.tme.for.SubMap.gct")
 cls_file <- file.path(res.path,"target.tme.for.SubMap.cls")
 generateInputFileForSubMap(in_gct = in_gct, gct_file = gct_file, cls_file = cls_file, sam_info = sam_info, type_name = "rank")
+
+# $Bonferroni.SA.matrix
+# B1         B2
+# A1 0.003996004 1.00000000
+# A2 1.000000000 0.04795205
+# 
+# $FDR.SA.matrix
+# B1         B2
+# A1 0.003996004 1.00000000
+# A2 0.999000999 0.02397602
+# 
+# $nominal.p.matrix.Fisher
+# B1         B2
+# A1 0.000999001 0.99600400
+# A2 0.999000999 0.01198801
+
+tmp <- matrix(c(0.001,0.996, # nominal p value
+                0.999,0.012, 
+
+                0.004,1, # Bonferroni adjusted p value
+                1,0.048,
+
+                0.004,1, # FDR adjusted p value
+                0.999,0.024), 
+              nrow = 6,byrow = T,
+              dimnames = list(c("SFCE-iWT","SFCE-dWT","SFCE-iWT ","SFCE-dWT ","SFCE-iWT  ","SFCE-dWT  "),c("CCLE-WT (no anaplasia)","CCLE-WT (anaplasia)")))
+
+hm <- pheatmap(tmp, 
+               border_color = "black",
+               number_format = "%.3f",
+               cellwidth = 40, cellheight = 40,
+               cluster_rows = F,cluster_cols = F,
+               color = rev(NMF:::ccRamp(c("#E6EAF7","#B6D1E8","#498EB9","#204F8D"),64)),
+               display_numbers = T,
+               number_color = "black",
+               fontsize_number = 10,
+               name = "Statitic",
+               annotation_row = data.frame(pvalue=c("Nominal p value","Nominal p value","Bonferroni adjusted","Bonferroni adjusted","FDR adjusted","FDR adjusted"),
+                                           row.names = rownames(tmp)),
+               annotation_colors = list(pvalue=c("Nominal p value"="black","Bonferroni adjusted"="grey40","FDR adjusted" = "grey70")))
+pdf(file.path(fig.path,"submap heatmap of similarity between gaby cohort and ccle.pdf"),width = 8,height = 8)
+draw(hm, heatmap_legend_side = "left",annotation_legend_side = "right")
+invisible(dev.off())
+
+# $Bonferroni.SA.matrix
+# B1        B2
+# A1 0.03996004 1.0000000
+# A2 1.00000000 0.1438561
+# 
+# $FDR.SA.matrix
+# B1         B2
+# A1 0.03996004 1.00000000
+# A2 1.00000000 0.07192807
+# 
+# $nominal.p.matrix.Fisher
+# B1         B2
+# A1 0.00999001 1.00000000
+# A2 0.97502498 0.03596404
+tmp <- matrix(c(0.001,1, # nominal p value
+                0.975,0.036, 
+                
+                0.040,1, # Bonferroni adjusted p value
+                1,0.144,
+                
+                0.040,1, # FDR adjusted p value
+                1,0.072), 
+              nrow = 6,byrow = T,
+              dimnames = list(c("SFCE-iWT","SFCE-dWT","SFCE-iWT ","SFCE-dWT ","SFCE-iWT  ","SFCE-dWT  "),c("TARGET-iWT","TARGET-dWT")))
+
+hm <- pheatmap(tmp, 
+               border_color = "black",
+               number_format = "%.3f",
+               cellwidth = 40, cellheight = 30,
+               cluster_rows = F,cluster_cols = F,
+               color = rev(NMF:::ccRamp(c("#E6EAF7","#B6D1E8","#498EB9","#204F8D"),64)),
+               display_numbers = T,
+               number_color = "black",
+               fontsize_number = 10,
+               name = "Statitic",
+               annotation_row = data.frame(pvalue=c("Nominal p value","Nominal p value","Bonferroni adjusted","Bonferroni adjusted","FDR adjusted","FDR adjusted"),
+                                           row.names = rownames(tmp)),
+               annotation_colors = list(pvalue=c("Nominal p value"="black","Bonferroni adjusted"="grey40","FDR adjusted" = "grey70")))
+pdf(file.path(fig.path,"submap heatmap of similarity between gaby cohort and target.pdf"),width = 8,height = 8)
+draw(hm, heatmap_legend_side = "left",annotation_legend_side = "right")
+invisible(dev.off())
+
+
+# immune cells analysis
+wt3 <- read.table(file.path(data.path,"clinical data for 55 wts - 27052023.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+tmp <- wt182[rownames(wt3),"EZH2 S21"]; wt3$EZH2 <- tmp
+wt3$EZH2.curated <- as.numeric(wt3$EZH2)
+#wt3$EZH2.curated[38] <- 50
+#wt3$EZH2.curated[53] <- 90
+
+cor.test(wt3$EZH2.curated,wt3$CD3_10HPF,method = "spearman",alternative = "less")
+cor.test(wt3$EZH2.curated,wt3$CD8_10HPF,method = "spearman",alternative = "less")
+
+mycol2 <- brewer.pal(12, "Paired")
+
+tmp <- data.frame(count = c(wt3$CD3_10HPF, wt3$CD8_10HPF),
+                  gene = c(wt3$EZH2.curated,wt3$EZH2.curated),
+                  lymphocyte = rep(c("CD3","CD8"),each = 55),
+                  cohort = "gaby")
+tmp$lymphocyte <- factor(tmp$lymphocyte, levels = c("CD3","CD8"))
+ggplot(tmp, aes(x=gene, y=count, shape = lymphocyte, color = lymphocyte)) + 
+  geom_point(size = 3)+
+  geom_smooth(method = "lm", se = FALSE,aes(color = lymphocyte)) +
+  # geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0, # or, use fill = NA
+  #             aes(color = group, fill = group),linetype = "dashed") +
+  geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0.2,
+              aes(color = lymphocyte, fill = lymphocyte),linetype = "dashed") +
+  scale_color_manual(values = c(darkblue,darkred)) +
+  scale_fill_manual(values = c(darkblue,darkred)) +
+  scale_shape_manual(values = c(19,17)) + 
+  scale_y_continuous(limits=c(0,700), breaks=c(0,100,200,300,400,500,600,700)) + 
+  scale_x_continuous(limits=c(0,100), breaks=c(0,20,40,60,80,100)) + 
+  theme_bw() + 
+  ylab("Lymphocyte per 10 HPF") +
+  xlab("EZH2") + theme_bw() + 
+  theme(axis.text.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.text.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.ticks = element_line(size=0.2, color="black"),
+        axis.ticks.length = unit(0.2, "cm"),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "top",
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 10)) +
+  annotate(geom="text", x=75, y=500, label="CD3: R = -0.22, p = 0.073",
+           color=darkblue, size = 5) +
+  annotate(geom="text", x=75, y=470, label="CD8: R = -0.36, p = 0.007",
+           color=darkred, size = 5)
+ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte count and ezh2 in 55 wts.pdf"), width = 5,height = 5)
+
+ggplot(tmp, aes(x=gene, y=count, shape = lymphocyte, color = lymphocyte)) + 
+  geom_point(size = 3)+
+  geom_smooth(method = "lm", se = FALSE,aes(color = lymphocyte)) +
+  # geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0, # or, use fill = NA
+  #             aes(color = group, fill = group),linetype = "dashed") +
+  geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0.2,
+              aes(color = lymphocyte, fill = lymphocyte),linetype = "dashed") +
+  scale_color_manual(values = c(darkblue,darkred)) +
+  scale_fill_manual(values = c(darkblue,darkred)) +
+  scale_shape_manual(values = c(19,17)) + 
+  scale_y_continuous(limits=c(0,1000), breaks=c(0,100,200,300,400,500,1000)) + 
+  scale_x_continuous(limits=c(0,100), breaks=c(0,20,40,60,80,100)) + 
+  theme_bw() + 
+  ylab("Lymphocyte per 10 HPF") +
+  xlab("EZH2") + theme_bw() + 
+  theme(axis.text.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.text.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.ticks = element_line(size=0.2, color="black"),
+        axis.ticks.length = unit(0.2, "cm"),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "top",
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 10)) +
+  annotate(geom="text", x=75, y=500, label="CD3: R = -0.22, p = 0.073",
+           color=darkblue, size = 5) +
+  annotate(geom="text", x=75, y=470, label="CD8: R = -0.36, p = 0.007",
+           color=darkred, size = 5)
+ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte count and ezh2 in 55 wts with long y-axis.pdf"), width = 5,height = 5)
+
+# do the correlation differently
+tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","EZH2.curated","OS","OS.time","PFS","PFS.time")]
+cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "pearson",alternative = "less")
+cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "pearson",alternative = "less")
+
+tmp <- data.frame(count = c(tmp1$CD3_10HPF, tmp1$CD8_10HPF),
+                  gene = c(tmp1$EZH2.curated,tmp1$EZH2.curated),
+                  lymphocyte = rep(c("CD3","CD8"),each = 12),
+                  cohort = "gaby")
+tmp$lymphocyte <- factor(tmp$lymphocyte, levels = c("CD3","CD8"))
+ggplot(tmp, aes(x=gene, y=count, shape = lymphocyte, color = lymphocyte)) + 
+  geom_point(size = 3)+
+  geom_smooth(method = "lm", se = FALSE,aes(color = lymphocyte)) +
+  # geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0, # or, use fill = NA
+  #             aes(color = group, fill = group),linetype = "dashed") +
+  geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0.2,
+              aes(color = lymphocyte, fill = lymphocyte),linetype = "dashed") +
+  scale_color_manual(values = c(blue,red)) +
+  scale_fill_manual(values = c(blue,red)) +
+  scale_shape_manual(values = c(19,17)) + 
+  scale_y_continuous(limits=c(0,500), breaks=c(0,100,200,300,400,500)) + 
+  scale_x_continuous(limits=c(0,80), breaks=c(0,20,40,60,80)) + 
+  theme_bw() + 
+  ylab("Lymphocyte per 10 HPF") +
+  xlab("EZH2") + theme_bw() + 
+  theme(axis.text.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.text.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.ticks = element_line(size=0.2, color="black"),
+        axis.ticks.length = unit(0.2, "cm"),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "top",
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 10)) +
+  annotate(geom="text", x=55, y=500, label="CD3: R = -0.15, p = 0.336",
+           color=blue, size = 5) +
+  annotate(geom="text", x=55, y=470, label="CD8: R = -0.17, p = 0.323",
+           color=red, size = 5)
+ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte count and ezh2 in 12 anaplastic out of 55 wts.pdf"), width = 5,height = 5)
+
+tmp1 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","EZH2.curated","OS","OS.time","PFS","PFS.time")]
+cor.test(tmp1$EZH2.curated,tmp1$CD3_10HPF,method = "spearman",alternative = "less")
+cor.test(tmp1$EZH2.curated,tmp1$CD8_10HPF,method = "spearman",alternative = "less")
+
+tmp <- data.frame(count = c(tmp1$CD3_10HPF, tmp1$CD8_10HPF),
+                  gene = c(tmp1$EZH2.curated,tmp1$EZH2.curated),
+                  lymphocyte = rep(c("CD3","CD8"),each = 43),
+                  cohort = "gaby")
+tmp$lymphocyte <- factor(tmp$lymphocyte, levels = c("CD3","CD8"))
+ggplot(tmp, aes(x=gene, y=count, shape = lymphocyte, color = lymphocyte)) + 
+  geom_point(size = 3)+
+  geom_smooth(method = "lm", se = FALSE,aes(color = lymphocyte)) +
+  # geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0, # or, use fill = NA
+  #             aes(color = group, fill = group),linetype = "dashed") +
+  geom_ribbon(stat = "smooth",method = "lm",se = TRUE,alpha = 0.2,
+              aes(color = lymphocyte, fill = lymphocyte),linetype = "dashed") +
+  scale_color_manual(values = c(blue,red)) +
+  scale_fill_manual(values = c(blue,red)) +
+  scale_shape_manual(values = c(19,17)) + 
+  scale_y_continuous(limits=c(0,500), breaks=c(0,100,200,300,400,500)) + 
+  scale_x_continuous(limits=c(0,100), breaks=c(0,20,40,60,80,100)) + 
+  theme_bw() + 
+  ylab("Lymphocyte per 10 HPF") +
+  xlab("EZH2") + theme_bw() + 
+  theme(axis.text.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.text.y = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.title.x = element_text(hjust = 0.5, size = 12, color = "black"),
+        axis.ticks = element_line(size=0.2, color="black"),
+        axis.ticks.length = unit(0.2, "cm"),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        legend.position = "top",
+        axis.title = element_text(size = 10),
+        axis.text = element_text(size = 10)) +
+  annotate(geom="text", x=75, y=500, label="CD3: R = -0.25, p = 0.074",
+           color=blue, size = 5) +
+  annotate(geom="text", x=75, y=470, label="CD8: R = -0.42, p = 0.005",
+           color=red, size = 5)
+ggsave(filename = file.path(fig.path,"correlation scatter plot of lymphocyte count and ezh2 in 43 non-anaplastic out of 55 wts.pdf"), width = 5,height = 5)
+
+tmp <- data.frame(exp = c(wt3$`CD3_10HPF`,wt3$`CD8_10HPF`),
+                  mut = rep(c("CD3","CD8"),c(55,55)),
+                  sam = rep(rownames(wt3),2))
+
+pdf(file.path(fig.path,"boxplot for lymphcytes of new 55 wts.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(3,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data=tmp,
+        xlab = "",
+        ylab = "Number of cells/10 HPF",
+        names = c("CD3","CD8"),
+        outline = F,
+        ylim = c(0,1800),
+        col = c(alpha(red,0.8),alpha(blue,0.8)))
+stripchart(exp~mut,data= tmp, vertical = TRUE, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col =  c(alpha(red,0.8),alpha(blue,0.8)))
+invisible(dev.off())
+
+par(bty="o", mgp = c(1.5,.33,0), mar=c(3,3,1,0.1), las=1, tcl=-.25,las = 1)
+barplot(wt3$`CD3_10HPF`,col = alpha(red,0.6), border = NA)
+barplot(wt3$`CD8_10HPF`,add = T, col = alpha(blue,0.6), border = NA)
+#tmp2 <- tmp[which(tmp$mut %in% c("CD4","CD8")),]
+tmp2 <- tmp
+samorder <- rownames(wt3)
+tmp2$sam <- factor(tmp2$sam,levels = samorder)
+ggplot (tmp2, aes(x=sam, y=exp, fill=mut)) + 
+  geom_bar (stat="identity", position = position_dodge(width = 0.8)) +   
+  scale_fill_manual(values = c(alpha(red,0.8),alpha(blue,0.8),alpha(jco[2],0.8))) +
+  theme_classic() + ylab("Number of cells/10 HPF") + 
+  theme(axis.line.y = element_line(size = 0.8),
+        axis.ticks.y = element_line(size = 0.2),
+        axis.text.x = element_text(size = 8, color = "black", angle = 90),
+        axis.text.y = element_text(size = 12, color = "black"),
+        axis.title.y = element_text(size = 12, color = "black"),
+        axis.title.x = element_blank(),
+        legend.title = element_blank(),
+        legend.position = "bottom") +
+  scale_y_continuous(
+    breaks = seq(0,1800,100),
+    labels = seq(0,1800,100)
+  )
+ggsave(file.path(fig.path,"distribution of lymphcytes in new 55 wts.pdf"),width = 6,height = 6)
+
+# differencec of EZH2 and TP53 mutation
+data <- read_xlsx("E:/IGBMC/myproject/Wilms/Manuscript/New version/Submission/Nat Commun/Supplementary Tables-R1.xlsx", sheet = 1, skip = 1)
+
+tmp <- data.frame(ezh2 = data$EZH2,
+                  tp53 = ifelse(data$`TP53 gene (NM_001276697) mutations` == "No","no","yes"),
+                  row.names = data$`n siop`)
+mean(na.omit(tmp[rownames(tp53.yes),"ezh2"]))
+mean(na.omit(tmp[rownames(tp53.no),"ezh2"]))
+
+tmp <- na.omit(tmp)
+wilcox.test(tmp$ezh2~tmp$tp53)
+
+# check histology for 53 cases
+wt3.curated <- wt3[!(is.na(wt3$CD3_10HPF) & is.na(wt3$CD8_10HPF)),]
+table(wt3.curated$`Histology type (review/local)`)
+
+# use median cutoff
+## anaplastic tumors
+tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+coxph(Surv(OS.time, OS) ~ CD3_10HPF, data = tmp1)
+coxph(Surv(PFS.time, PFS) ~ CD3_10HPF, data = tmp1)
+coxph(Surv(OS.time, OS) ~ CD8_10HPF, data = tmp1)
+coxph(Surv(PFS.time, PFS) ~ CD8_10HPF, data = tmp1)
+colnames(tmp1)[1] <- c("ratio")
+tmp1 <- as.data.frame(na.omit(tmp1))
+tmp1$group <- ifelse(tmp1$ratio > median(tmp1$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+colnames(tmp1)[2] <- c("ratio")
+tmp1 <- as.data.frame(na.omit(tmp1))
+tmp1$group <- ifelse(tmp1$ratio > median(tmp1$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+## non-anaplastic tumors
+tmp2 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+coxph(Surv(OS.time, OS) ~ CD3_10HPF, data = tmp2)
+coxph(Surv(PFS.time, PFS) ~ CD3_10HPF, data = tmp2)
+coxph(Surv(OS.time, OS) ~ CD8_10HPF, data = tmp2)
+coxph(Surv(PFS.time, PFS) ~ CD8_10HPF, data = tmp2)
+
+tmp2 <- tmp2[!is.na(tmp2$CD3_10HPF),]
+colnames(tmp2)[1] <- c("ratio")
+tmp2$group <- ifelse(tmp2$ratio > median(tmp2$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+tmp2 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp2 <- tmp2[!is.na(tmp2$CD8_10HPF),]
+colnames(tmp2)[2] <- c("ratio")
+tmp2$group <- ifelse(tmp2$ratio > median(tmp2$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+# all 55 cases
+tmp3 <- wt3[,c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+coxph(Surv(OS.time, OS) ~ CD3_10HPF, data = tmp3)
+coxph(Surv(PFS.time, PFS) ~ CD3_10HPF, data = tmp3)
+coxph(Surv(OS.time, OS) ~ CD8_10HPF, data = tmp3)
+coxph(Surv(PFS.time, PFS) ~ CD8_10HPF, data = tmp3)
+
+tmp3 <- tmp3[!is.na(tmp3$CD3_10HPF),]
+colnames(tmp3)[1] <- c("ratio")
+tmp3$group <- ifelse(tmp3$ratio > median(tmp3$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+tmp3 <- wt3[,c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp3 <- tmp3[!is.na(tmp3$CD8_10HPF),]
+colnames(tmp3)[2] <- c("ratio")
+tmp3$group <- ifelse(tmp3$ratio > median(tmp3$ratio),"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using median cutoff in updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using median cutoff in updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+# use best cutoff
+## anaplastic tumors
+tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp1$OS.time <- tmp1$OS.time/12
+tmp1$PFS.time <- tmp1$PFS.time/12
+colnames(tmp1)[1] <- c("ratio")
+tmp1 <- as.data.frame(na.omit(tmp1))
+bestcutoff <- surv_cutpoint(data = tmp1, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+tmp1$TP53 <- NA
+tmp1[intersect(rownames(tmp1),rownames(tp53.yes)),"TP53"] <- "yes"
+tmp1[intersect(rownames(tmp1),rownames(tp53.no)),"TP53"] <- "no"
+fisher.test(table(tmp1$TP53,tmp1$group),alternative = "greater")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Years)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 3.5, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp1, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Years)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 3.5, height = 5)
+print(p)
+dev.off()
+
+tmp1 <- wt3[which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp1$OS.time <- tmp1$OS.time/12
+tmp1$PFS.time <- tmp1$PFS.time/12
+colnames(tmp1)[2] <- c("ratio")
+tmp1 <- as.data.frame(na.omit(tmp1))
+bestcutoff <- surv_cutpoint(data = tmp1, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+tmp1$TP53 <- NA
+tmp1[intersect(rownames(tmp1),rownames(tp53.yes)),"TP53"] <- "yes"
+tmp1[intersect(rownames(tmp1),rownames(tp53.no)),"TP53"] <- "no"
+fisher.test(table(tmp1$TP53,tmp1$group),alternative = "greater")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Years)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 3.5, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp1, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp1$group <- ifelse(tmp1$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp1,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp1,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp1,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Years)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in 12 anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 3.5, height = 5)
+print(p)
+dev.off()
+
+## non-anaplastic tumors
+tmp2 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp2$OS.time <- tmp2$OS.time/12
+tmp2$PFS.time <- tmp2$PFS.time/12
+coxph(Surv(OS.time, OS) ~ CD3_10HPF, data = tmp2)
+coxph(Surv(PFS.time, PFS) ~ CD3_10HPF, data = tmp2)
+coxph(Surv(OS.time, OS) ~ CD8_10HPF, data = tmp2)
+coxph(Surv(PFS.time, PFS) ~ CD8_10HPF, data = tmp2)
+
+tmp2 <- tmp2[!is.na(tmp2$CD3_10HPF),]
+colnames(tmp2)[1] <- c("ratio")
+bestcutoff <- surv_cutpoint(data = tmp2, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp2$group <- ifelse(tmp2$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Years)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp2, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp2$group <- ifelse(tmp2$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Years)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+tmp2 <- wt3[-which(wt3$`Histology type (review/local)` %in% c("ANA diffuse (312)","Focal anaplasia (311)")),c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time")]
+tmp2 <- tmp2[!is.na(tmp2$CD8_10HPF),]
+tmp2$OS.time <- tmp2$OS.time/12
+tmp2$PFS.time <- tmp2$PFS.time/12
+colnames(tmp2)[2] <- c("ratio")
+bestcutoff <- surv_cutpoint(data = tmp2, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp2$group <- ifelse(tmp2$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp2, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp2$group <- ifelse(tmp2$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp2,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp2,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp2,
+                size              = 1,
+                break.time.by     = 1,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Years)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in 43 non-anaplatic wt out of updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+# all 55 cases
+tmp3 <- wt3[,c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time","Histology type (review/local)")]
+coxph(Surv(OS.time, OS) ~ CD3_10HPF, data = tmp3)
+coxph(Surv(PFS.time, PFS) ~ CD3_10HPF, data = tmp3)
+coxph(Surv(OS.time, OS) ~ CD8_10HPF, data = tmp3)
+coxph(Surv(PFS.time, PFS) ~ CD8_10HPF, data = tmp3)
+
+tmp3 <- tmp3[!is.na(tmp3$CD3_10HPF),]
+colnames(tmp3)[1] <- c("ratio")
+bestcutoff <- surv_cutpoint(data = tmp3, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp3$group <- ifelse(tmp3$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+table(tmp3$`Histology type (review/local)`,tmp3$group)
+#                       High Low
+# ANA diffuse (312)        6   4
+# Blastemal (212)          5   0
+# Epithelial (211)         1   2
+# Focal anaplasia (311)    1   0
+# Mixed (214)             16   2
+# Regressive (216)         7   0
+# Stromal (213)            4   2
+fisher.test(matrix(c(6+1,4+0,5+1+16+7+4,2+2+2),byrow = T,nrow = 2))
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp3, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp3$group <- ifelse(tmp3$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+table(tmp3$`Histology type (review/local)`,tmp3$group)
+#                       High Low
+# ANA diffuse (312)        6   4
+# Blastemal (212)          5   0
+# Epithelial (211)         1   2
+# Focal anaplasia (311)    1   0
+# Mixed (214)             16   2
+# Regressive (216)         7   0
+# Stromal (213)            3   3
+fisher.test(matrix(c(6+1,4+0,5+1+16+7+3,2+2+3),byrow = T,nrow = 2))
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in updated 55 wt cohort regarding cd3 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+tmp3 <- wt3[,c("CD3_10HPF","CD8_10HPF","OS","OS.time","PFS","PFS.time","Histology type (review/local)")]
+tmp3 <- tmp3[!is.na(tmp3$CD8_10HPF),]
+colnames(tmp3)[2] <- c("ratio")
+bestcutoff <- surv_cutpoint(data = tmp3, variables = "ratio",time = "OS.time",event = "OS",minprop = 0.2)
+tmp3$group <- ifelse(tmp3$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+table(tmp3$`Histology type (review/local)`,tmp3$group)
+#                       High Low
+# ANA diffuse (312)        3   7
+# Blastemal (212)          3   2
+# Epithelial (211)         3   0
+# Focal anaplasia (311)    1   0
+# Mixed (214)             12   7
+# Regressive (216)         5   2
+# Stromal (213)            5   2
+fisher.test(matrix(c(3+1,7+0,3+3+12+5+5,2+7+2+2),byrow = T,nrow = 2))
+
+fitd <- survdiff(Surv(OS.time, OS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(OS.time, OS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                ylim              = c(0,1),
+                surv.median.line  = "hv",
+                xlab              = "Time (Months)",
+                ylab              = "Overall survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+p
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of os using best cutoff in updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+bestcutoff <- surv_cutpoint(data = tmp3, variables = "ratio",time = "PFS.time",event = "PFS",minprop = 0.2)
+tmp3$group <- ifelse(tmp3$ratio > bestcutoff$cutpoint[1,1],"High","Low")
+table(tmp3$`Histology type (review/local)`,tmp3$group)
+#                       High Low
+# ANA diffuse (312)        2   8
+# Blastemal (212)          2   3
+# Epithelial (211)         3   0
+# Focal anaplasia (311)    1   0
+# Mixed (214)             12   7
+# Regressive (216)         5   2
+# Stromal (213)            3   4
+fisher.test(matrix(c(2+1,8+0,2+3+12+5+3,3+7+2+4),byrow = T,nrow = 2))
+
+fitd <- survdiff(Surv(PFS.time, PFS) ~ group,
+                 data      = tmp3,
+                 na.action = na.exclude)
+p.val <- 1 - pchisq(fitd$chisq, length(fitd$n) - 1)
+fit <- survfit(Surv(PFS.time, PFS)~ group,
+               data      = tmp3,
+               type      = "kaplan-meier",
+               error     = "greenwood",
+               conf.type = "plain",
+               na.action = na.exclude)
+names(fit$strata) <- gsub("group=", "", names(fit$strata))
+p <- ggsurvplot(fit               = fit,
+                conf.int          = FALSE,
+                risk.table        = T,
+                risk.table.col    = "strata",
+                palette           = c(darkred,darkblue),
+                data              = tmp3,
+                size              = 1,
+                break.time.by     = 12,
+                legend.title      = "",
+                surv.median.line  = "hv",
+                ylim              = c(0,1),
+                xlab              = "Time (Months)",
+                ylab              = "Recurrence-free survival",
+                risk.table.y.text = FALSE)
+p.lab <- paste0("P",
+                ifelse(p.val < 0.001, " < 0.001",
+                       paste0(" = ",round(p.val, 3))))
+p$plot <- p$plot + annotate("text",
+                            x = 4, y = 0.1,
+                            hjust = 0,
+                            fontface = 4,
+                            label = p.lab)
+pdf.options(reset = TRUE, onefile = FALSE)
+pdf(file.path(fig.path,"km of pfs using best cutoff in updated 55 wt cohort regarding cd8 count.pdf"), width = 4, height = 5)
+print(p)
+dev.off()
+
+#--------------------#
+# all 182 wt samples #
+wt182 <- read.delim(file = file.path(data.path,"clinical data for all 182 wts - 27052023.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+
+# 169 T has a negative recurrence time
+# Column ag and ai to see prognostic relevance, clinical features, histology, stage, age.
+tmp <- wt182[,c("Overall Stage (review/local)","Age at diagnostic (years)","Sexe","H3K36ME3","H3K4ME","rechute oui=1 non=0","TTP months","0= alive; 1= death","os (YEARS)")]
+colnames(tmp) <- c("stage","age","sex","H3K36ME3","H3K4ME","PFS","PFS.time","OS","OS.time")
+
+#-----------------------------------#
+# compare PDL1, PD1, CTLA4 and LAG3 #
+
+## SFCE
+# PD1
+tmp1 <- as.numeric(gaby.wt["PDCD1",RNA_Clust1])
+tmp2 <- as.numeric(gaby.wt["PDCD1",RNA_Clust2])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for PD1 in Gaby WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "PDCD1 (PD1)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 1",cex = 1)
+invisible(dev.off())
+
+# PDL1
+tmp1 <- as.numeric(gaby.wt["CD274",RNA_Clust1])
+tmp2 <- as.numeric(gaby.wt["CD274",RNA_Clust2])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for PDL1 in Gaby WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "CD274 (PDL1)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.151",cex = 1)
+invisible(dev.off())
+
+# CTLA4
+tmp1 <- as.numeric(gaby.wt["CTLA4",RNA_Clust1])
+tmp2 <- as.numeric(gaby.wt["CTLA4",RNA_Clust2])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for CTLA4 in Gaby WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "CTLA4 (CD152)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.091",cex = 1)
+invisible(dev.off())
+
+# LAG3
+tmp1 <- as.numeric(gaby.wt["LAG3",RNA_Clust1])
+tmp2 <- as.numeric(gaby.wt["LAG3",RNA_Clust2])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for LAG3 in Gaby WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "LAG3 (CD223)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.222",cex = 1)
+invisible(dev.off())
+
+## TARGET
+# PD1
+tmp1 <- as.numeric(target.wt["PDCD1",RNA_Clust1.target.dawt])
+tmp2 <- as.numeric(target.wt["PDCD1",RNA_Clust2.target.dawt])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for PD1 in target WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "PDCD1 (PD1)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.679",cex = 1)
+invisible(dev.off())
+
+# PDL1
+tmp1 <- as.numeric(target.wt["CD274",RNA_Clust1.target.dawt])
+tmp2 <- as.numeric(target.wt["CD274",RNA_Clust2.target.dawt])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for PDL1 in target WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "CD274 (PDL1)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.615",cex = 1)
+invisible(dev.off())
+
+# CTLA4
+tmp1 <- as.numeric(target.wt["CTLA4",RNA_Clust1.target.dawt])
+tmp2 <- as.numeric(target.wt["CTLA4",RNA_Clust2.target.dawt])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for CTLA4 in target WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "CTLA4 (CD152)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,0.3,"P = 0.090",cex = 1)
+invisible(dev.off())
+
+# LAG3
+tmp1 <- as.numeric(target.wt["LAG3",RNA_Clust1.target.dawt])
+tmp2 <- as.numeric(target.wt["LAG3",RNA_Clust2.target.dawt])
+wilcox.test(tmp1,tmp2)
+
+tmp <- data.frame(exp = c(tmp1,tmp2),
+                  mut = rep(c("iWT","dWT"),c(length(tmp1),length(tmp2))))
+tmp$mut <- factor(tmp$mut,levels = c("iWT","dWT"))
+pdf(file.path(fig.path,"boxplot for LAG3 in target WT regarding tme subtypes.pdf"),width = 2.5,height = 3.5)
+par(bty="o", mgp = c(1.5,.33,0), mar=c(4,3,1,0.1), las=1, tcl=-.25,las = 1)
+boxplot(exp~mut,data = tmp,
+        xlab = "Immunity status",
+        ylab = "LAG3 (CD223)",
+        outline = F,
+        col = ggplot2::alpha(jco[2:1],0.7))
+stripchart(exp~mut, vertical = TRUE, data = tmp, cex = 1,
+           method = "jitter", add = TRUE, pch = 20, col = c(jco[2],jco[1]))
+text(1.5,3.5,"P = 0.631",cex = 1)
+invisible(dev.off())
+
+#-------------------------------------------------------#
+# differential expression for transcriptomic similarity #
+target.wt.ct <- read.delim(file = file.path(data.path,"Wilm_TARGET_Project_rawCounts_V15.txt"),sep = "\t",row.names = 1,check.names = F,stringsAsFactors = F,header = T)
+target.wt.ct <- target.wt.ct[rownames(Ginfo),]
+target.wt.ct$gene <- Ginfo$genename
+target.wt.ct <- target.wt.ct[!duplicated(target.wt.ct$gene),]
+rownames(target.wt.ct) <- target.wt.ct$gene
+target.wt.ct <- target.wt.ct[,setdiff(colnames(target.wt.ct),"gene")]
+
+gaby.wt.ct <- target.wt.ct[,rownames(annCol.wt.gaby.genomic.alter)]
+target.wt.ct <- target.wt.ct[,rownames(annCol.target.dawt)]
+
+gaby.wt.ct <- gaby.wt.ct[rowSums(gaby.wt.ct) > 0,]
+target.wt.ct <- target.wt.ct[rowSums(target.wt.ct) > 0,]
+ccle.wt.ct <- ccle.wt.ct[rowSums(ccle.wt.ct) > 0,]
+
+comgene <- intersect(Ginfo[which(Ginfo$genetype == "protein_coding"),"genename"], rownames(gaby.wt.ct))
+comgene <- intersect(comgene, rownames(ccle.wt.ct))
+comgene <- intersect(comgene, rownames(target.wt.ct))
+
+# GABY
+tmp <- annCol.wt.gaby.genomic.alter
+tmp$TME <- ifelse(tmp$RNA_Clust == "TP53_Mutated","dWT","iWT")
+group <- factor(tmp$TME, levels = c("dWT","iWT"))
+design <- model.matrix(~group)
+rownames(design) <- rownames(tmp)
+y <- DGEList(counts=gaby.wt.ct[comgene,], group=group)
+y <- calcNormFactors(y, method = "TMM")
+y <- estimateDisp(y, design, robust=TRUE)
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit)
+ordered_tags <- topTags(lrt, n=100000)
+allDiff=ordered_tags$table
+allDiff=allDiff[is.na(allDiff$FDR)==FALSE,]
+deg.gaby <- allDiff
+
+# TARGECT
+tmp <- annCol.target.dawt
+tmp$TME <- ifelse(tmp$TME == "C1","iWT","dWT")
+group <- factor(tmp$TME, levels = c("dWT","iWT"))
+design <- model.matrix(~group)
+rownames(design) <- rownames(tmp)
+y <- DGEList(counts=target.wt.ct[comgene,], group=group)
+y <- calcNormFactors(y, method = "TMM")
+y <- estimateDisp(y, design, robust=TRUE)
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit)
+ordered_tags <- topTags(lrt, n=100000)
+allDiff=ordered_tags$table
+allDiff=allDiff[is.na(allDiff$FDR)==FALSE,]
+deg.target <- allDiff
+
+# CCLE
+tmp <- annCol.ccle
+tmp$TME <- ifelse(tmp$TME == "cTME-C1","iWT","dWT")
+group <- factor(tmp$TME, levels = c("dWT","iWT"))
+design <- model.matrix(~group)
+rownames(design) <- rownames(tmp)
+y <- DGEList(counts=ccle.wt.ct[comgene,], group=group)
+y <- calcNormFactors(y, method = "TMM")
+y <- estimateDisp(y, design, robust=TRUE)
+fit <- glmFit(y, design)
+lrt <- glmLRT(fit)
+ordered_tags <- topTags(lrt, n=100000)
+allDiff=ordered_tags$table
+allDiff=allDiff[is.na(allDiff$FDR)==FALSE,]
+deg.ccle <- allDiff
+write.table(deg.gaby, file = file.path(res.path,"deg.gaby.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+write.table(deg.target, file = file.path(res.path,"deg.target.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+write.table(deg.ccle, file = file.path(res.path,"deg.ccle.txt"),sep = "\t",row.names = T,col.names = NA,quote = F)
+
+up.gaby <- rownames(deg.gaby[which(deg.gaby$logFC > 1 & deg.gaby$PValue < 0.05 & deg.gaby$FDR < 0.25),])
+dn.gaby <- rownames(deg.gaby[which(deg.gaby$logFC < -1 & deg.gaby$PValue < 0.05 & deg.gaby$FDR < 0.25),])
+
+up.target <- rownames(deg.target[which(deg.target$logFC > 1 & deg.target$PValue < 0.05 & deg.target$FDR < 0.25),])
+dn.target <- rownames(deg.target[which(deg.target$logFC < -1 & deg.target$PValue < 0.05 & deg.target$FDR < 0.25),])
+
+up.ccle <- rownames(deg.ccle[which(deg.ccle$logFC > 1 & deg.ccle$PValue < 0.05 & deg.ccle$FDR < 0.25),])
+dn.ccle <- rownames(deg.ccle[which(deg.ccle$logFC < -1 & deg.ccle$PValue < 0.05 & deg.ccle$FDR < 0.25),])
 
 # save image
 save.image(file = "WILMS.RData")
