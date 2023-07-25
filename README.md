@@ -2,19 +2,13 @@
 
 This repository contains the analytical pipeline for our research project. We aimed to unravel the complex interplay between oncogenic pathways and immune responses in Anaplastic Wilms Tumors and derive implications for prognosis and potential therapeutic vulnerabilities.
 
-## Getting Started
-
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes.
-
-### Prerequisites
+## Prerequisites
 
 The analysis was performed in the following environment:
 
 - R version 4.2.2 (2022-10-31 ucrt)
 - Platform: x86_64-w64-mingw32/x64 (64-bit)
 - Running under: Windows 10 x64 (build 19044)
-
-Ensure that your setup aligns with these prerequisites for seamless execution.
 
 ## Project Structure
 
@@ -37,10 +31,6 @@ The `/scripts` directory contains customized functions used in this project:
 - `plot.common.cluster.R`: Performs consensus hierarchical clustering with all the intermediate inputs saved.
 - `standarize.fun.R`: Scales and truncates the data for the main part of the heatmap.
 - `twoclassedgeR.R`: Performs differential expression analysis between two conditions using the edgeR algorithm based on raw count matrix.
-
-## Running the Scripts
-
-Details on how to execute these scripts are embedded within the script files themselves. Navigate to the individual files for precise instructions.
 
 ## License
 
